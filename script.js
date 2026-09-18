@@ -215,13 +215,22 @@
     { s: 2, q: 8 },
   ];
   let heroCycleIdx = 0;
+  let heroInterval = null;
   heroRender(heroCycle[0].s, heroCycle[0].q);
-  if (!REDUCE) {
-    setInterval(() => {
+
+  function startHeroCycle() {
+    if (heroInterval || REDUCE) return;
+    heroCycleIdx = 0;
+    heroRender(heroCycle[0].s, heroCycle[0].q);
+    heroInterval = setInterval(() => {
       heroCycleIdx = (heroCycleIdx + 1) % heroCycle.length;
       const step = heroCycle[heroCycleIdx];
       heroRender(step.s, step.q);
     }, 3200);
+  }
+  function stopHeroCycle() {
+    clearInterval(heroInterval);
+    heroInterval = null;
   }
 
   /* ---------------------------------------------------------
@@ -284,8 +293,12 @@
   const rnnNodes = buildCompare(rnnSvg, "rnn-node", "rnn-edge", "chain");
   const attnNodes = buildCompare(attnCmpSvg, "attn-node", "attn-edge", "mesh");
 
-  document.getElementById("rnn-replay").addEventListener("click", async function () {
-    this.disabled = true;
+  let rnnRunning = false;
+  async function playRnnDemo() {
+    if (rnnRunning) return;
+    rnnRunning = true;
+    const btn = document.getElementById("rnn-replay");
+    btn.disabled = true;
     rnnNodes.forEach((n) => n.classList.remove("on"));
     const start = performance.now();
     for (let i = 0; i < rnnNodes.length; i++) {
@@ -294,11 +307,17 @@
     }
     const elapsed = ((performance.now() - start) / 1000).toFixed(2);
     document.getElementById("rnn-timer").textContent = `${elapsed}s · sequential`;
-    this.disabled = false;
-  });
+    btn.disabled = false;
+    rnnRunning = false;
+  }
+  document.getElementById("rnn-replay").addEventListener("click", playRnnDemo);
 
-  document.getElementById("attn-replay").addEventListener("click", function () {
-    this.disabled = true;
+  let attnRunning = false;
+  function playAttnDemo() {
+    if (attnRunning) return;
+    attnRunning = true;
+    const btn = document.getElementById("attn-replay");
+    btn.disabled = true;
     attnNodes.forEach((n) => n.classList.remove("on"));
     Array.from(attnCmpSvg.querySelectorAll(".attn-edge")).forEach((e) => e.classList.remove("on"));
     const start = performance.now();
@@ -310,9 +329,11 @@
     setTimeout(() => {
       const elapsed = ((performance.now() - start) / 1000).toFixed(2);
       document.getElementById("attn-timer").textContent = `${elapsed}s · parallel`;
-      this.disabled = false;
+      btn.disabled = false;
+      attnRunning = false;
     }, REDUCE ? 0 : edges.length * 10 + 40);
-  });
+  }
+  document.getElementById("attn-replay").addEventListener("click", playAttnDemo);
 
   /* ---------------------------------------------------------
      ANATOMY: interactive QKV demo
@@ -456,7 +477,7 @@
   }
 
   let archRunning = false;
-  archRunBtn.addEventListener("click", async () => {
+  async function runArchitectureFlow() {
     if (archRunning) return;
     archRunning = true;
     archRunBtn.disabled = true;
@@ -471,15 +492,17 @@
     archPulse.classList.remove("show");
     archRunBtn.disabled = false;
     archRunning = false;
-  });
+  }
+  archRunBtn.addEventListener("click", runArchitectureFlow);
 
-  archResetBtn.addEventListener("click", () => {
+  function resetArchitectureFlow() {
     archRunning = false;
     archRunBtn.disabled = false;
     ALL_ARCH_NODES.forEach((id) => document.getElementById(id).classList.remove("is-active"));
     archPulse.classList.remove("show");
     archStatus.textContent = "Press run to watch data move through the network.";
-  });
+  }
+  archResetBtn.addEventListener("click", resetArchitectureFlow);
 
   /* ---------------------------------------------------------
      INSIDE ATTENTION: step player
@@ -525,24 +548,27 @@
   }
   document.getElementById("sdpa-next").addEventListener("click", () => sdpaGoto(sdpaStep + 1));
   document.getElementById("sdpa-prev").addEventListener("click", () => sdpaGoto(sdpaStep - 1));
-  document.getElementById("sdpa-reset").addEventListener("click", () => {
+  function resetSdpaDemo() {
     clearInterval(sdpaTimer);
     sdpaTimer = null;
     sdpaGoto(-1);
-  });
-  document.getElementById("sdpa-play").addEventListener("click", function () {
+  }
+  document.getElementById("sdpa-reset").addEventListener("click", resetSdpaDemo);
+  function playSdpaDemo() {
     if (sdpaTimer) return;
     if (sdpaStep >= SDPA_STEPS.length - 1) sdpaStep = -1;
-    this.disabled = true;
+    const btn = document.getElementById("sdpa-play");
+    btn.disabled = true;
     sdpaTimer = setInterval(() => {
       sdpaGoto(sdpaStep + 1);
       if (sdpaStep >= SDPA_STEPS.length - 1) {
         clearInterval(sdpaTimer);
         sdpaTimer = null;
-        document.getElementById("sdpa-play").disabled = false;
+        btn.disabled = false;
       }
     }, REDUCE ? 10 : 1300);
-  });
+  }
+  document.getElementById("sdpa-play").addEventListener("click", playSdpaDemo);
   sdpaRender();
 
   /* ---------------------------------------------------------
@@ -780,6 +806,60 @@
   renderPeTokens();
   fitCanvas();
   redrawPE();
+
+  /* ---------------------------------------------------------
+     Scroll-triggered demos: each section's animation plays
+     automatically only while that section is in view, and
+     replays fresh every time it scrolls back into view.
+  --------------------------------------------------------- */
+  if (!REDUCE && "IntersectionObserver" in window) {
+    const heroSection = document.querySelector(".hero");
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) startHeroCycle();
+          else stopHeroCycle();
+        });
+      },
+      { threshold: 0.4 }
+    ).observe(heroSection);
+
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          rnnNodes.forEach((n) => n.classList.remove("on"));
+          attnNodes.forEach((n) => n.classList.remove("on"));
+          Array.from(attnCmpSvg.querySelectorAll(".attn-edge")).forEach((e) => e.classList.remove("on"));
+          playRnnDemo();
+          playAttnDemo();
+        });
+      },
+      { threshold: 0.6 }
+    ).observe(document.getElementById("why"));
+
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          resetArchitectureFlow();
+          runArchitectureFlow();
+        });
+      },
+      { threshold: 0.5 }
+    ).observe(document.getElementById("architecture"));
+
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          resetSdpaDemo();
+          playSdpaDemo();
+        });
+      },
+      { threshold: 0.5 }
+    ).observe(document.getElementById("inside"));
+  }
 
   /* ---------------------------------------------------------
      GLOSSARY filter
