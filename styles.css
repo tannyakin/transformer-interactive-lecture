@@ -203,7 +203,7 @@ main { display: block; }
 }
 
 section { padding-block: 76px; }
-section:first-of-type { padding-top: 0; }
+section:first-of-type:not(.hero) { padding-top: 0; }
 
 /* ---------- hero ---------- */
 
