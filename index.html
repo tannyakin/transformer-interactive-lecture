@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Transformer: an interactive lecture notebook</title>
+<meta name="description" content="An interactive, animated walkthrough of the Transformer architecture from 'Attention Is All You Need', built for AI UniPod students.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141821'/%3E%3Ccircle cx='9' cy='11' r='2.6' fill='%233ee6c4'/%3E%3Ccircle cx='23' cy='11' r='2.6' fill='%23ffa057'/%3E%3Ccircle cx='16' cy='23' r='2.6' fill='%23ff5d7a'/%3E%3Cpath d='M9 11L23 11M9 11L16 23M23 11L16 23' stroke='%23ff5d7a' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main" style="position:absolute;left:-9999px;top:0;background:#fff;color:#000;padding:8px 14px;z-index:100;">Skip to content</a>
+<span id="top"></span>
+
+<header class="site-header">
+  <div class="progress-rail"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="header-inner">
+    <a class="wordmark" href="#top">
+      <svg class="wordmark-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="9" cy="11" r="2.6" fill="var(--encoder)"/><circle cx="23" cy="11" r="2.6" fill="var(--decoder)"/><circle cx="16" cy="23" r="2.6" fill="var(--attn)"/><path d="M9 11L23 11M9 11L16 23M23 11L16 23" stroke="var(--attn)" stroke-width="1.4" stroke-linecap="round"/></svg>
+      attention&nbsp;lecture
+    </a>
+    <nav class="pill-nav" id="pill-nav" aria-label="Section navigation">
+      <a href="#why" data-sec="why">why attention</a>
+      <a href="#anatomy" data-sec="anatomy">anatomy</a>
+      <a href="#architecture" data-sec="architecture">full architecture</a>
+      <a href="#inside" data-sec="inside">inside attention</a>
+      <a href="#positional" data-sec="positional">positional encoding</a>
+      <a href="#equations" data-sec="equations">equations</a>
+      <a href="#glossary" data-sec="glossary">glossary</a>
+      <a href="#config" data-sec="config">base vs big</a>
+    </nav>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle color theme" aria-pressed="false">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap-wide">
+      <p class="citation-line">Vaswani et al., 2017. "Attention Is All You Need," NeurIPS</p>
+      <h1 class="hero-title" id="hero-title">The Transformer</h1>
+      <p class="hero-sub">an interactive lecture notebook for AI UniPod</p>
+      <p class="hero-dek">
+        Before this paper, language models read a sentence one word at a time, carrying a summary
+        forward and slowly forgetting the beginning by the time they reached the end. The Transformer
+        throws that away: <strong>every word looks directly at every other word, all at once.</strong>
+        Scroll down and press play on each diagram. You will watch the actual computation move.
+      </p>
+
+      <div class="hero-viz">
+        <div class="hero-viz-label">
+          <span><span class="live-dot"></span>live: attention refocuses every few seconds</span>
+          <span class="mono" id="hero-sentence-tag">example 1 / 3</span>
+        </div>
+        <svg id="hero-sentence" viewBox="0 0 900 150" role="img" aria-label="Animated sentence showing one word's attention weights shifting to other words over time"></svg>
+      </div>
+
+      <div class="scroll-cue">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+        scroll to begin
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= WHY ATTENTION ================= -->
+  <section id="why">
+    <div class="wrap">
+      <p class="kicker"><span class="n">§1</span> · the core problem</p>
+      <h2>Why attention?</h2>
+      <p class="lede">
+        A recurrent network (RNN) reads left to right, one token per step, each step waiting on the
+        last. That makes training slow and lets information from early words fade by the time later
+        words arrive. Attention compares every pair of words in a single pass, with no waiting and no fading.
+        That's the whole idea behind the paper's title: once you have attention, you don't need
+        recurrence at all.
+      </p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <div class="compare-head">
+            <h3><span class="tag-decoder">Recurrent</span></h3>
+            <span class="compare-meta" id="rnn-timer">not run yet</span>
+          </div>
+          <p class="compare-sub">one step at a time</p>
+          <svg class="compare-svg" id="rnn-svg" viewBox="0 0 300 150" role="img" aria-label="Diagram of a recurrent network processing five tokens one after another in sequence"></svg>
+          <p class="compare-foot">Each word waits for the previous one to finish before it can be processed.</p>
+          <div class="control-row"><button class="btn" id="rnn-replay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 0 18.5 16"/><polyline points="20 4 20 11 13 11"/></svg> replay</button></div>
+        </div>
+        <div class="compare-card">
+          <div class="compare-head">
+            <h3><span class="tag-encoder">Attention</span></h3>
+            <span class="compare-meta" id="attn-timer">not run yet</span>
+          </div>
+          <p class="compare-sub">all at once</p>
+          <svg class="compare-svg" id="attn-cmp-svg" viewBox="0 0 300 150" role="img" aria-label="Diagram of attention connecting all five tokens to each other simultaneously in one step"></svg>
+          <p class="compare-foot">Every word compares itself to every other word in a single, parallel step.</p>
+          <div class="control-row"><button class="btn" id="attn-replay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 0 18.5 16"/><polyline points="20 4 20 11 13 11"/></svg> replay</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ANATOMY / QKV ================= -->
+  <section id="anatomy">
+    <div class="wrap">
+      <p class="kicker"><span class="n">§2</span> · the mechanism</p>
+      <h2>Anatomy of attention</h2>
+      <p class="lede">
+        Every word gets turned into three short vectors. Click any word below to make it the
+        <b>query</b> and watch it re-weight every other word in the sentence.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Query, key, value: in plain terms</div>
+        <p>Think of it like a quick library search.</p>
+        <div class="analogy-grid">
+          <div class="analogy-card">
+            <div class="analogy-name">Query (Q)</div>
+            <div class="analogy-desc">what this word is looking for</div>
+          </div>
+          <div class="analogy-card">
+            <div class="analogy-name">Key (K)</div>
+            <div class="analogy-desc">what each word offers, like a label on a book spine</div>
+          </div>
+          <div class="analogy-card">
+            <div class="analogy-name">Value (V)</div>
+            <div class="analogy-desc">the actual content that word carries</div>
+          </div>
+        </div>
+        <p>
+          The query is compared against every key. Close matches score high, poor matches score low,
+          and softmax turns those scores into weights that add up to 1. The word's new representation
+          is a blend of everyone's values, weighted toward whoever it matched best.
+        </p>
+      </div>
+
+      <div class="tabs" id="qkv-tabs" role="tablist" aria-label="Example sentences">
+        <button class="tab active" data-idx="0" role="tab" aria-selected="true">the tired animal</button>
+        <button class="tab" data-idx="1" role="tab" aria-selected="false">the poured water</button>
+        <button class="tab" data-idx="2" role="tab" aria-selected="false">the trophy &amp; suitcase</button>
+      </div>
+
+      <div class="qkv-panel">
+        <svg id="qkv-sentence" viewBox="0 0 900 90" role="img" aria-label="Clickable sentence for exploring attention weights"></svg>
+        <div class="weight-bars" id="qkv-bars"></div>
+        <p class="qkv-hint" id="qkv-hint">Click a word above. Its query will compare itself against every key in the sentence.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ARCHITECTURE ================= -->
+  <section id="architecture">
+    <div class="wrap-wide">
+      <p class="kicker"><span class="n">§3</span> · the full model</p>
+      <h2>Encoder–decoder stack</h2>
+      <p class="lede">
+        The encoder reads the input and builds a representation of it. The decoder generates the
+        output one token at a time, attending both to what it has written so far and to the
+        encoder's representation. One layer of each is drawn below; the base model stacks
+        <b>N&nbsp;=&nbsp;6</b> of each. Press run to watch a single token's journey through the network.
+      </p>
+
+      <div class="legend">
+        <div class="legend-item"><span class="swatch" style="background:var(--encoder-soft);border-color:var(--encoder);"></span>encoder-side layers</div>
+        <div class="legend-item"><span class="swatch" style="background:var(--decoder-soft);border-color:var(--decoder);"></span>decoder-side layers</div>
+        <div class="legend-item"><span class="swatch" style="background:var(--attn-soft);border-color:var(--attn);"></span>attention mechanism</div>
+        <div class="legend-item"><span class="swatch" style="background:var(--surface-2);border-color:var(--ink-faint);"></span>add &amp; norm / generic</div>
+      </div>
+
+      <div class="control-row">
+        <button class="btn primary" id="arch-run"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> run the flow</button>
+        <button class="btn" id="arch-reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 0 18.5 16"/><polyline points="20 4 20 11 13 11"/></svg> reset</button>
+      </div>
+      <p class="status-line" id="arch-status" aria-live="polite">Press run to watch data move through the network.</p>
+
+      <figure>
+        <div class="diagram-scroll">
+          <svg id="arch-svg" class="diagram" viewBox="0 0 940 660" role="img" aria-label="Transformer encoder-decoder architecture diagram">
+            <defs>
+              <marker id="arrowM" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/></marker>
+              <marker id="arrowSkip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/></marker>
+              <marker id="arrowKV" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--attn)"/></marker>
+            </defs>
+
+            <text x="260" y="11" text-anchor="middle" class="col-title" font-size="10.5">encoder</text>
+            <text x="680" y="11" text-anchor="middle" class="col-title" font-size="10.5">decoder</text>
+
+            <rect class="bracket" x="95" y="148" width="330" height="208" rx="10"/>
+            <rect class="bracket" x="535" y="148" width="330" height="312" rx="10"/>
+            <text class="stack-label" font-size="12" fill="var(--encoder)" transform="rotate(-90 55 252)" x="55" y="252" text-anchor="middle">&times; N (N=6)</text>
+            <text class="stack-label" font-size="12" fill="var(--decoder)" transform="rotate(90 905 304)" x="905" y="304" text-anchor="middle">&times; N (N=6)</text>
+
+            <!-- ENCODER -->
+            <text x="260" y="34" text-anchor="middle" class="flow-label" font-size="11">inputs</text>
+            <line x1="260" y1="40" x2="260" y2="53" class="flow-line" marker-end="url(#arrowM)"/>
+
+            <rect id="node-enc-embed" class="box-encoder" x="140" y="55" width="240" height="45" rx="8"/>
+            <text x="260" y="74" text-anchor="middle" class="node-label" font-size="13">Input Embedding</text>
+            <text x="260" y="90" text-anchor="middle" class="node-sub" font-size="9.5">tokens &#8594; &#8477;&#8309;&sup1;&sup2;</text>
+
+            <line x1="260" y1="100" x2="260" y2="114" class="flow-line" marker-end="url(#arrowM)"/>
+            <circle id="node-enc-pe" class="pe-circle" cx="260" cy="127" r="11"/>
+            <text x="260" y="131" text-anchor="middle" font-size="13" fill="var(--ink-soft)">+</text>
+            <text x="290" y="123" class="node-sub" font-size="9.5" font-style="italic">positional encoding</text>
+            <text x="290" y="134" class="node-sub" font-size="9.5" font-style="italic">(sin / cos, fixed)</text>
+
+            <line x1="260" y1="138" x2="260" y2="153" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-enc-attn" class="box-attn" x="140" y="155" width="240" height="55" rx="8"/>
+            <text x="260" y="176" text-anchor="middle" class="node-label" font-size="13">Multi-Head</text>
+            <text x="260" y="190" text-anchor="middle" class="node-label" font-size="13">Attention</text>
+            <text x="260" y="203" text-anchor="middle" class="node-sub" font-size="9.5">self-attention · h=8</text>
+
+            <line x1="260" y1="210" x2="260" y2="220" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-enc-addnorm1" class="box-neutral" x="140" y="222" width="240" height="25" rx="6"/>
+            <text x="260" y="238" text-anchor="middle" class="node-label" font-size="12">Add &amp; Norm</text>
+
+            <line x1="260" y1="247" x2="260" y2="257" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-enc-ffn" class="box-encoder" x="140" y="259" width="240" height="55" rx="8"/>
+            <text x="260" y="284" text-anchor="middle" class="node-label" font-size="13">Feed Forward</text>
+            <text x="260" y="299" text-anchor="middle" class="node-sub" font-size="9.5">512&#8594;2048&#8594;512, ReLU</text>
+
+            <line x1="260" y1="314" x2="260" y2="324" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-enc-addnorm2" class="box-neutral" x="140" y="326" width="240" height="25" rx="6"/>
+            <text x="260" y="342" text-anchor="middle" class="node-label" font-size="12">Add &amp; Norm</text>
+
+            <path class="skip-line" d="M260,155 L115,155 L115,234 L138,234" marker-end="url(#arrowSkip)"/>
+            <text x="108" y="150" text-anchor="end" class="node-sub" font-size="8.5" font-style="italic">residual</text>
+            <path class="skip-line" d="M260,259 L115,259 L115,338 L138,338" marker-end="url(#arrowSkip)"/>
+
+            <line x1="260" y1="351" x2="260" y2="371" class="kv-line" marker-end="url(#arrowKV)"/>
+            <text x="266" y="368" class="node-sub" font-size="9" fill="var(--attn)">encoder output</text>
+            <path id="node-bridge" class="kv-line" d="M260,371 L470,371 L470,287 L554,287" marker-end="url(#arrowKV)"/>
+            <text x="464" y="362" text-anchor="end" class="node-sub" font-size="9.5" fill="var(--attn)" font-weight="600">K, V</text>
+
+            <!-- DECODER -->
+            <text x="680" y="34" text-anchor="middle" class="flow-label" font-size="11">outputs (shifted right)</text>
+            <line x1="680" y1="40" x2="680" y2="53" class="flow-line" marker-end="url(#arrowM)"/>
+
+            <rect id="node-dec-embed" class="box-decoder" x="560" y="55" width="240" height="45" rx="8"/>
+            <text x="680" y="74" text-anchor="middle" class="node-label" font-size="13">Output Embedding</text>
+            <text x="680" y="90" text-anchor="middle" class="node-sub" font-size="9.5">previous tokens only</text>
+
+            <line x1="680" y1="100" x2="680" y2="114" class="flow-line" marker-end="url(#arrowM)"/>
+            <circle id="node-dec-pe" class="pe-circle" cx="680" cy="127" r="11"/>
+            <text x="680" y="131" text-anchor="middle" font-size="13" fill="var(--ink-soft)">+</text>
+            <text x="550" y="123" text-anchor="end" class="node-sub" font-size="9.5" font-style="italic">positional encoding</text>
+            <text x="550" y="134" text-anchor="end" class="node-sub" font-size="9.5" font-style="italic">(sin / cos, fixed)</text>
+
+            <line x1="680" y1="138" x2="680" y2="153" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-dec-mask" class="box-attn" x="560" y="155" width="240" height="55" rx="8"/>
+            <text x="680" y="176" text-anchor="middle" class="node-label" font-size="13">Masked Multi-Head</text>
+            <text x="680" y="190" text-anchor="middle" class="node-label" font-size="13">Attention</text>
+            <text x="680" y="203" text-anchor="middle" class="node-sub" font-size="9.5">self-attn · causal mask</text>
+
+            <line x1="680" y1="210" x2="680" y2="220" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-dec-addnorm1" class="box-neutral" x="560" y="222" width="240" height="25" rx="6"/>
+            <text x="680" y="238" text-anchor="middle" class="node-label" font-size="12">Add &amp; Norm</text>
+
+            <line x1="680" y1="247" x2="680" y2="257" class="flow-line" marker-end="url(#arrowM)"/>
+            <text x="686" y="255" class="node-sub" font-size="9" fill="var(--ink-faint)">Q</text>
+            <rect id="node-dec-cross" class="box-attn" x="560" y="259" width="240" height="55" rx="8"/>
+            <text x="680" y="280" text-anchor="middle" class="node-label" font-size="13">Multi-Head</text>
+            <text x="680" y="294" text-anchor="middle" class="node-label" font-size="13">Attention</text>
+            <text x="680" y="307" text-anchor="middle" class="node-sub" font-size="9.5">Q: decoder · K,V: encoder</text>
+
+            <line x1="680" y1="314" x2="680" y2="324" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-dec-addnorm2" class="box-neutral" x="560" y="326" width="240" height="25" rx="6"/>
+            <text x="680" y="342" text-anchor="middle" class="node-label" font-size="12">Add &amp; Norm</text>
+
+            <line x1="680" y1="351" x2="680" y2="361" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-dec-ffn" class="box-decoder" x="560" y="363" width="240" height="55" rx="8"/>
+            <text x="680" y="388" text-anchor="middle" class="node-label" font-size="13">Feed Forward</text>
+            <text x="680" y="403" text-anchor="middle" class="node-sub" font-size="9.5">512&#8594;2048&#8594;512, ReLU</text>
+
+            <line x1="680" y1="418" x2="680" y2="428" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-dec-addnorm3" class="box-neutral" x="560" y="430" width="240" height="25" rx="6"/>
+            <text x="680" y="446" text-anchor="middle" class="node-label" font-size="12">Add &amp; Norm</text>
+
+            <path class="skip-line" d="M680,155 L825,155 L825,234 L802,234" marker-end="url(#arrowSkip)"/>
+            <path class="skip-line" d="M680,259 L825,259 L825,338 L802,338" marker-end="url(#arrowSkip)"/>
+            <path class="skip-line" d="M680,363 L825,363 L825,442 L802,442" marker-end="url(#arrowSkip)"/>
+
+            <line x1="680" y1="455" x2="680" y2="473" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-dec-linear" class="box-output" x="560" y="475" width="240" height="40" rx="8"/>
+            <text x="680" y="491" text-anchor="middle" class="node-label" font-size="13">Linear</text>
+            <text x="680" y="506" text-anchor="middle" class="node-sub" font-size="9.5">512 &#8594; |vocabulary|</text>
+
+            <line x1="680" y1="515" x2="680" y2="525" class="flow-line" marker-end="url(#arrowM)"/>
+            <rect id="node-dec-softmax" class="box-output" x="560" y="527" width="240" height="40" rx="8"/>
+            <text x="680" y="543" text-anchor="middle" class="node-label" font-size="13">Softmax</text>
+            <text x="680" y="558" text-anchor="middle" class="node-sub" font-size="9.5">next-token probabilities</text>
+
+            <line x1="680" y1="567" x2="680" y2="580" class="flow-line" marker-end="url(#arrowM)"/>
+            <text x="680" y="598" text-anchor="middle" class="flow-label" font-size="11.5" font-weight="600">output probabilities</text>
+
+            <circle id="arch-pulse" class="pulse-dot" r="6" cx="260" cy="34"/>
+          </svg>
+        </div>
+        <figcaption>
+          Dashed lines are residual connections: each sublayer's output is added back to its own input
+          before normalizing (<code class="inline-code">LayerNorm(x + Sublayer(x))</code>). The red path
+          is the only bridge between the two stacks: the encoder's final representation becomes the keys
+          and values every decoder layer's cross-attention reads from.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ================= INSIDE ATTENTION ================= -->
+  <section id="inside">
+    <div class="wrap-wide">
+      <p class="kicker"><span class="n">§4</span> · zooming in</p>
+      <h2>Inside attention, step by step</h2>
+      <p class="lede">
+        Every attention box above (self, masked-self, and cross) runs this same five-step
+        computation. "Multi-head" just means running it <code class="inline-code">h</code> times in
+        parallel on different learned slices of the input, then gluing the results back together.
+      </p>
+
+      <div class="control-row">
+        <button class="btn primary" id="sdpa-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> play</button>
+        <button class="btn" id="sdpa-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg> back</button>
+        <button class="btn" id="sdpa-next">forward <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></button>
+        <button class="btn" id="sdpa-reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 0 18.5 16"/><polyline points="20 4 20 11 13 11"/></svg> reset</button>
+        <div class="step-dots" id="sdpa-dots" aria-hidden="true"></div>
+      </div>
+      <p class="status-line" id="sdpa-status" aria-live="polite">Step through scaled dot-product attention, then see it happen h=8 times in parallel on the right.</p>
+
+      <figure>
+        <div class="diagram-scroll">
+          <svg id="attn-svg" class="diagram" viewBox="0 0 940 440" role="img" aria-label="Scaled dot-product attention and multi-head attention diagrams">
+            <defs><marker id="arrowA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/></marker></defs>
+
+            <text x="220" y="16" text-anchor="middle" class="col-title" font-size="11">scaled dot-product attention</text>
+            <text x="700" y="16" text-anchor="middle" class="col-title" font-size="11">multi-head attention (h = 8)</text>
+
+            <text x="140" y="35" text-anchor="middle" class="node-label" font-size="13">Q</text>
+            <text x="260" y="35" text-anchor="middle" class="node-label" font-size="13">K</text>
+            <text x="380" y="35" text-anchor="middle" class="node-label" font-size="13">V</text>
+            <line x1="140" y1="42" x2="140" y2="63" class="flow-line" marker-end="url(#arrowA)"/>
+            <line x1="260" y1="42" x2="260" y2="63" class="flow-line" marker-end="url(#arrowA)"/>
+            <line x1="380" y1="42" x2="380" y2="345" class="flow-line"/>
+
+            <rect id="sdpa-mm1" class="box-attn" x="140" y="65" width="120" height="38" rx="7"/>
+            <text x="200" y="88" text-anchor="middle" class="node-label" font-size="12">MatMul</text>
+
+            <line x1="200" y1="103" x2="200" y2="118" class="flow-line" marker-end="url(#arrowA)"/>
+            <rect id="sdpa-scale" class="box-neutral" x="140" y="120" width="120" height="36" rx="7"/>
+            <text x="200" y="142" text-anchor="middle" class="node-label" font-size="12">Scale</text>
+            <text x="330" y="142" class="node-sub" font-size="9.5">&divide; &#8730;d_k</text>
+
+            <line x1="200" y1="156" x2="200" y2="171" class="flow-line" marker-end="url(#arrowA)"/>
+            <rect id="sdpa-mask" class="box-neutral" x="140" y="173" width="120" height="36" rx="7" stroke-dasharray="4 3"/>
+            <text x="200" y="195" text-anchor="middle" class="node-label" font-size="12">Mask (opt.)</text>
+            <text x="330" y="195" class="node-sub" font-size="9">decoder self-attn only</text>
+
+            <line x1="200" y1="209" x2="200" y2="224" class="flow-line" marker-end="url(#arrowA)"/>
+            <rect id="sdpa-softmax" class="box-attn" x="140" y="226" width="120" height="36" rx="7"/>
+            <text x="200" y="248" text-anchor="middle" class="node-label" font-size="12">SoftMax</text>
+
+            <line x1="200" y1="262" x2="200" y2="277" class="flow-line" marker-end="url(#arrowA)"/>
+            <line x1="380" y1="345" x2="362" y2="345" class="flow-line" marker-end="url(#arrowA)"/>
+            <rect id="sdpa-mm2" class="box-attn" x="140" y="327" width="220" height="38" rx="7"/>
+            <text x="250" y="351" text-anchor="middle" class="node-label" font-size="12">MatMul</text>
+
+            <line x1="200" y1="365" x2="200" y2="385" class="flow-line" marker-end="url(#arrowA)"/>
+            <text x="200" y="403" text-anchor="middle" class="flow-label" font-size="11" font-weight="600">output</text>
+            <text x="200" y="417" text-anchor="middle" class="node-sub" font-size="9" font-style="italic">weighted sum of V</text>
+
+            <text x="580" y="35" text-anchor="middle" class="node-label" font-size="13">V</text>
+            <text x="700" y="35" text-anchor="middle" class="node-label" font-size="13">K</text>
+            <text x="820" y="35" text-anchor="middle" class="node-label" font-size="13">Q</text>
+            <line x1="580" y1="42" x2="580" y2="63" class="flow-line" marker-end="url(#arrowA)"/>
+            <line x1="700" y1="42" x2="700" y2="63" class="flow-line" marker-end="url(#arrowA)"/>
+            <line x1="820" y1="42" x2="820" y2="63" class="flow-line" marker-end="url(#arrowA)"/>
+
+            <rect id="mh-lin-v" class="box-neutral" x="545" y="65" width="70" height="36" rx="7"/>
+            <rect id="mh-lin-k" class="box-neutral" x="665" y="65" width="70" height="36" rx="7"/>
+            <rect id="mh-lin-q" class="box-neutral" x="785" y="65" width="70" height="36" rx="7"/>
+            <text x="580" y="87" text-anchor="middle" class="node-label" font-size="11.5">Linear</text>
+            <text x="700" y="87" text-anchor="middle" class="node-label" font-size="11.5">Linear</text>
+            <text x="820" y="87" text-anchor="middle" class="node-label" font-size="11.5">Linear</text>
+
+            <line x1="580" y1="101" x2="580" y2="128" class="flow-line" marker-end="url(#arrowA)"/>
+            <line x1="700" y1="101" x2="700" y2="128" class="flow-line" marker-end="url(#arrowA)"/>
+            <line x1="820" y1="101" x2="820" y2="128" class="flow-line" marker-end="url(#arrowA)"/>
+
+            <g id="mh-stack">
+              <rect class="box-neutral" x="608" y="140" width="184" height="66" rx="8" opacity="0.55"/>
+              <rect class="box-neutral" x="598" y="133" width="184" height="66" rx="8" opacity="0.75"/>
+              <rect class="box-attn" x="588" y="126" width="184" height="66" rx="8"/>
+              <text x="680" y="152" text-anchor="middle" class="node-label" font-size="11.5">Scaled Dot-Product</text>
+              <text x="680" y="166" text-anchor="middle" class="node-label" font-size="11.5">Attention</text>
+              <text x="680" y="182" text-anchor="middle" class="node-sub" font-size="9.5">&times; h (h = 8, in parallel)</text>
+            </g>
+
+            <line x1="680" y1="206" x2="680" y2="240" class="flow-line" marker-end="url(#arrowA)"/>
+            <rect id="mh-concat" class="box-neutral" x="600" y="242" width="160" height="36" rx="7"/>
+            <text x="680" y="264" text-anchor="middle" class="node-label" font-size="12">Concat</text>
+            <text x="770" y="264" class="node-sub" font-size="9">h &times; d_v = 512</text>
+
+            <line x1="680" y1="278" x2="680" y2="298" class="flow-line" marker-end="url(#arrowA)"/>
+            <rect id="mh-linout" class="box-output" x="600" y="300" width="160" height="36" rx="7"/>
+            <text x="680" y="322" text-anchor="middle" class="node-label" font-size="12">Linear</text>
+            <text x="770" y="322" class="node-sub" font-size="9">output proj. W&#7476;</text>
+
+            <line x1="680" y1="336" x2="680" y2="385" class="flow-line" marker-end="url(#arrowA)"/>
+            <text x="680" y="403" text-anchor="middle" class="flow-label" font-size="11" font-weight="600">output</text>
+          </svg>
+        </div>
+        <figcaption>The mask only exists in the decoder's first sublayer, blocking each position from attending to positions after it. That is the causal constraint that keeps generation left to right.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ================= POSITIONAL ENCODING ================= -->
+  <section id="positional">
+    <div class="wrap">
+      <p class="kicker"><span class="n">§5</span> · putting order back in</p>
+      <h2>Positional encoding</h2>
+      <p class="lede">
+        Attention on its own treats a sentence like a bag of words. Nothing tells it "the" came
+        before "animal." So a fixed wave pattern is added to every token's embedding, one wave per
+        pair of dimensions, each at a different frequency. The sliders below control one of those
+        waves. The row of tokens underneath lets you compare any two positions directly and see
+        exactly how similar their full encodings are.
+      </p>
+
+      <div class="pe-panel">
+        <div class="pe-controls">
+          <div class="pe-control">
+            <label>dimension pair <span class="mono val" id="pe-i-val">i = 6</span></label>
+            <input type="range" id="pe-i" min="0" max="31" value="6" step="1">
+          </div>
+          <div class="pe-control">
+            <label>model width <span class="mono val" id="pe-d-val">d_model = 64</span></label>
+            <input type="range" id="pe-d" min="16" max="128" value="64" step="16">
+          </div>
+        </div>
+        <canvas id="pe-canvas" width="900" height="240"></canvas>
+        <p class="qkv-hint">Low <span class="inline-code">i</span> (early dimensions) oscillates fast, changing with every position. High <span class="inline-code">i</span> oscillates slowly, changing only over long stretches. Together they give every position a unique fingerprint.</p>
+
+        <div class="pe-compare">
+          <p class="pe-compare-label">Pick two tokens to compare their full positional encoding vectors</p>
+          <div class="pe-tokens-row" id="pe-tokens" role="group" aria-label="Token positions, click two to compare"></div>
+          <p class="status-line" id="pe-sim-status" aria-live="polite">Click a token above, then a second one, to compare them.</p>
+          <div class="pe-heatmap" id="pe-heatmap" hidden>
+            <div class="pe-heatmap-row">
+              <span class="pe-heatmap-tag pe-tag-a" id="pe-heatmap-label-a">token A</span>
+              <div class="pe-heatmap-cells" id="pe-heatmap-a"></div>
+            </div>
+            <div class="pe-heatmap-row">
+              <span class="pe-heatmap-tag pe-tag-b" id="pe-heatmap-label-b">token B</span>
+              <div class="pe-heatmap-cells" id="pe-heatmap-b"></div>
+            </div>
+            <p class="pe-heatmap-caption">Each cell is one dimension of the encoding vector. Where the two rows share color, the tokens agree; where they diverge, the model can tell the positions apart.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EQUATIONS ================= -->
+  <section id="equations">
+    <div class="wrap">
+      <p class="kicker"><span class="n">§6</span> · reference</p>
+      <h2>Key equations</h2>
+      <div class="eq-grid">
+        <div class="eq-card">
+          <div class="eq-name">scaled dot-product attention</div>
+          <div class="eq-body">Attention(Q,K,V) =<br>&nbsp;&nbsp;softmax( QK&#7488; / &radic;d_k ) V</div>
+          <div class="eq-plain">Score every value by how well its key matches the query, turn scores into weights with softmax, then blend the values. Dividing by &radic;d_k keeps scores from growing too large as vectors get longer.</div>
+        </div>
+        <div class="eq-card">
+          <div class="eq-name">multi-head attention</div>
+          <div class="eq-body">head_i = Attention(QW&#7522;<sup>Q</sup>, KW&#7522;<sup>K</sup>, VW&#7522;<sup>V</sup>)<br>MultiHead = Concat(head&#8321;,&hellip;,head&#8462;) W&#7476;</div>
+          <div class="eq-plain">Run the comparison h separate times, each on its own learned slice of Q, K, V, so different heads catch different relationships. Glue the results together and mix with one more linear layer.</div>
+        </div>
+        <div class="eq-card">
+          <div class="eq-name">position-wise feed forward</div>
+          <div class="eq-body">FFN(x) = max(0, xW&#8321;+b&#8321;) W&#8322;+b&#8322;</div>
+          <div class="eq-plain">Two small dense layers with a ReLU between them, applied separately to each token. It never lets tokens compare notes. That is attention's job.</div>
+        </div>
+        <div class="eq-card">
+          <div class="eq-name">positional encoding</div>
+          <div class="eq-body">PE(pos,2i) = sin( pos / 10000^(2i/d_model) )<br>PE(pos,2i+1) = cos( pos / 10000^(2i/d_model) )</div>
+          <div class="eq-plain">A fixed wave added to each token's embedding so the model can tell position 1 apart from position 5. See the visualizer above.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GLOSSARY ================= -->
+  <section id="glossary">
+    <div class="wrap-wide">
+      <p class="kicker"><span class="n">§7</span> · vocabulary</p>
+      <h2>Terms to know</h2>
+      <p class="lede">A quick reference for the vocabulary used throughout. Start typing to filter.</p>
+      <input class="glossary-search" id="glossary-search" type="text" placeholder="filter terms… try “mask” or “norm”" autocomplete="off">
+      <div class="glossary" id="glossary-grid">
+        <div class="gloss-item"><div class="gloss-term">Token</div><div class="gloss-def">A piece of text the model treats as one unit, often a word or part of a word. "Unbelievable" might split into "un", "believ", and "able".</div></div>
+        <div class="gloss-item"><div class="gloss-term">Embedding</div><div class="gloss-def">A vector representing a token's meaning, learned during training so similar tokens end up with similar embeddings.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Vocabulary</div><div class="gloss-def">The fixed list of every token the model knows, often tens of thousands of entries.</div></div>
+        <div class="gloss-item"><div class="gloss-term">d_model</div><div class="gloss-def">The length of the vector used to represent every token as it moves through the network: 512 in the base model, 1024 in the big one.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Parameter</div><div class="gloss-def">A single learned number inside the model. Model size is usually measured by how many parameters it has.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Logits</div><div class="gloss-def">The raw, unnormalized scores the model outputs for each vocabulary token, right before softmax.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Softmax</div><div class="gloss-def">Turns a list of scores into probabilities that sum to 1, so the largest scores dominate but nothing drops to exactly zero.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Layer normalization</div><div class="gloss-def">Rescales each token's vector to keep values in a stable range, helping deep networks train reliably.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Residual connection</div><div class="gloss-def">A shortcut adding a sublayer's input back onto its output, so information can skip past that sublayer.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Feed-forward network (FFN)</div><div class="gloss-def">Two stacked dense layers with a nonlinearity between them, applied identically to every token position.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Self-attention</div><div class="gloss-def">Attention where queries, keys, and values all come from the same sequence.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Cross-attention</div><div class="gloss-def">Attention where queries come from one sequence (the decoder) and keys/values come from another (the encoder).</div></div>
+        <div class="gloss-item"><div class="gloss-term">Causal mask</div><div class="gloss-def">Hides future positions from a query, so a word can only attend to itself and whatever came before it.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Dropout</div><div class="gloss-def">Randomly zeroing some values during training so the model can't over-rely on any single connection.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Label smoothing</div><div class="gloss-def">Training the model to aim for, say, 90% confidence instead of 100%, keeping it from getting overconfident.</div></div>
+      </div>
+      <p class="gloss-empty" id="gloss-empty">No terms match that search.</p>
+    </div>
+  </section>
+
+  <!-- ================= CONFIG TABLE ================= -->
+  <section id="config">
+    <div class="wrap">
+      <p class="kicker"><span class="n">§8</span> · reference</p>
+      <h2>Base vs. big configuration</h2>
+      <p class="lede">The two model sizes reported in the paper's Table 3.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>hyperparameter</th><th>base</th><th>big</th></tr></thead>
+          <tbody>
+            <tr><td class="hp-name">N (layers per stack)</td><td class="mono">6</td><td class="mono">6</td></tr>
+            <tr><td class="hp-name">d_model</td><td class="mono">512</td><td class="mono">1024</td></tr>
+            <tr><td class="hp-name">d_ff</td><td class="mono">2048</td><td class="mono">4096</td></tr>
+            <tr><td class="hp-name">h (attention heads)</td><td class="mono">8</td><td class="mono">16</td></tr>
+            <tr><td class="hp-name">d_k = d_v</td><td class="mono">64</td><td class="mono">64</td></tr>
+            <tr><td class="hp-name">P_drop</td><td class="mono">0.1</td><td class="mono">0.3</td></tr>
+            <tr><td class="hp-name">label smoothing &epsilon;_ls</td><td class="mono">0.1</td><td class="mono">0.1</td></tr>
+            <tr><td class="hp-name">training steps</td><td class="mono">100,000</td><td class="mono">300,000</td></tr>
+            <tr><td class="hp-name">parameters</td><td class="mono">&asymp;65M</td><td class="mono">&asymp;213M</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Part of the <strong>AI UniPod</strong> LLM lecture series, built as a source of truth for students working through the Transformer architecture.</p>
+    <p>Redrawn and reinterpreted from Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, &#321;., &amp; Polosukhin, I. (2017). "Attention Is All You Need." <em>NeurIPS 2017.</em> Original figures: Figure 1 (architecture) and Figure 2 (attention).</p>
+  </div>
+</footer>
+
+<script src="script.js" defer></script>
+</body>
+</html>
