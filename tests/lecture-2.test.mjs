@@ -46,7 +46,7 @@ test("no step text contains an em dash", () => {
   for (const input of [def.input, Object.assign({}, def.input, def.twist.input)]) {
     const built = def.build(input);
     const text = JSON.stringify(built) + def.setup;
-    assert.ok(!text.includes("2014"));
+    assert.ok(!text.includes(String.fromCharCode(0x2014)));
   }
 });
 
@@ -142,6 +142,6 @@ test("no em dash in the T5 or RoPE walkthrough text", () => {
   for (const id of ["l2-t5", "l2-rope"]) {
     const def = defs[id];
     const text = JSON.stringify(def.build(def.input)) + def.setup + JSON.stringify(def.setupBlocks(def.input));
-    assert.ok(!text.includes("2014"), id);
+    assert.ok(!text.includes(String.fromCharCode(0x2014)), id);
   }
 });
