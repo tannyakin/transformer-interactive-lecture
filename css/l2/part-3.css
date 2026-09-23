@@ -1,0 +1,87 @@
+/* ============================================================
+   Lecture 2, Part 3: Add & Norm. Diagrams read every colour
+   from tokens, so both themes work without a redraw.
+   teal = the residual highway, red = attention,
+   blue = norms (the idea in focus), orange = a warning.
+   ============================================================ */
+
+.l2p3-svg { width: 100%; height: auto; font-family: var(--font-math); }
+.l2p3-svg text { fill: var(--ink); font-size: 12px; }
+
+/* ---------- block diagram ---------- */
+.l2p3-blockfig .ix-stage { max-width: 420px; }
+.l2p3-block.is-entering { animation: l2p3-fade 0.4s var(--ease-out); }
+@keyframes l2p3-fade { from { opacity: 0.3; } to { opacity: 1; } }
+
+.l2p3-hw { stroke: var(--encoder); stroke-width: 4; stroke-linecap: round; fill: none; }
+.l2p3-hwhead { fill: var(--encoder); }
+.l2p3-br { stroke: var(--ink-faint); stroke-width: 1.75; fill: none; }
+.l2p3-brhead { fill: var(--ink-faint); }
+
+.l2p3-box rect { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.5; }
+.l2p3-box text { font-size: 12px; }
+.l2p3-box.is-attn rect { fill: var(--attn-soft); stroke: var(--attn); }
+.l2p3-box.is-ffn rect { fill: var(--surface-3); stroke: var(--ink-faint); }
+.l2p3-box.is-norm rect { fill: var(--accent-soft); stroke: var(--accent); }
+.l2p3-box.is-norm.is-hit rect { stroke: var(--decoder); stroke-width: 2.5; stroke-dasharray: 6 4; }
+.l2p3-box.is-norm.is-final rect { stroke-dasharray: 2 3; }
+
+.l2p3-add circle { fill: var(--surface); stroke: var(--encoder); stroke-width: 2.5; }
+.l2p3-add path { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+.l2p3-svg .l2p3-tag { font-size: 11px; fill: var(--ink-soft); }
+.l2p3-svg .l2p3-tag.is-warn { fill: var(--decoder); font-weight: 600; }
+.l2p3-svg .l2p3-io { font-size: 13px; font-weight: 600; }
+
+.l2p3-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+.l2p3-legend li { display: inline-flex; align-items: center; gap: 8px; }
+.l2p3-sw { display: inline-block; width: 22px; height: 0; border-top: 4px solid var(--encoder); border-radius: 2px; }
+.l2p3-sw.is-branch { border-top: 2px solid var(--ink-faint); }
+.l2p3-sw.is-hit { height: 12px; border: 2px dashed var(--decoder); border-radius: 3px; background: var(--accent-soft); }
+
+/* ---------- gradient highway ---------- */
+.l2p3-svg .l2p3-ctitle { font-size: 12px; font-weight: 600; }
+.l2p3-svg .l2p3-tick { font-size: 10.5px; fill: var(--ink-faint); }
+.l2p3-svg .l2p3-val { font-size: 11px; font-weight: 600; }
+.l2p3-axis { stroke: var(--ink-faint); stroke-width: 1; }
+.l2p3-grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 4; }
+.l2p3-bar.is-plain { fill: var(--attn); }
+.l2p3-bar.is-short { fill: var(--encoder); }
+.l2p3-highfig .ix-stage { max-width: 560px; }
+
+/* ---------- residual stream ---------- */
+.l2p3-streamfig .ix-stage { max-width: 460px; }
+.l2p3-slayer { opacity: 0.35; transition: opacity 0.3s var(--ease-out); }
+.l2p3-slayer.is-on { opacity: 1; }
+.l2p3-seg rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.25; }
+.l2p3-seg.is-attn rect { fill: var(--attn-soft); stroke: var(--attn); }
+.l2p3-seg.is-ffn rect { fill: var(--encoder-soft); stroke: var(--encoder); }
+.l2p3-svg .l2p3-seg text { font-size: 10px; font-weight: 600; }
+.l2p3-seg.is-new { animation: l2p3-fade 0.45s var(--ease-out); }
+
+/* ---------- residual walkthrough panel ---------- */
+.l2p3-rpanel { display: grid; align-content: start; }
+.l2p3-rpanel svg { max-width: 380px; }
+.l2p3-svg .l2p3-rlabel { font-size: 11px; }
+.l2p3-svg .l2p3-rlabel.is-faint { fill: var(--ink-faint); }
+.l2p3-rpt.is-x { fill: var(--accent); }
+.l2p3-rpt.is-x.is-lost { fill: none; stroke: var(--ink-faint); stroke-width: 1.5; stroke-dasharray: 2 2; }
+.l2p3-rpt.is-without { fill: var(--surface); stroke: var(--attn); stroke-width: 2; }
+.l2p3-rpt.is-with { fill: var(--encoder); }
+.l2p3-rarrow { stroke-width: 2; fill: none; }
+.l2p3-rarrow.is-fx { stroke: var(--ink-faint); stroke-dasharray: 4 3; }
+.l2p3-rarrow.is-with { stroke: var(--encoder); }
+.l2p3-ahead { fill: var(--ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .l2p3-block.is-entering, .l2p3-seg.is-new { animation: none; }
+  .l2p3-slayer { transition: none; }
+}

@@ -372,6 +372,7 @@
   .wt-next { flex: 1; }
   .wt-dots { flex: 1; }
   .wt-cell { min-width: 4.2ch; padding: 6px 5px; font-size: 0.9rem; }
+  .wt-line { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.9rem; }
 }
 
 /* ---------- entrances: enhance, never hide ---------- */
