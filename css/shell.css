@@ -389,3 +389,82 @@ code { padding: 1px 6px; border-radius: 4px; background: var(--surface-2); }
   .drawer[open], .drawer[open]::backdrop { animation: none; }
   .toast { transition: opacity 0.01s; }
 }
+
+/* ============================================================
+   Shared lesson components used by every part.
+   ============================================================ */
+
+/* A displayed formula. Scrolls sideways on phones instead of breaking the page. */
+.formula {
+  margin: var(--space-5) 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-family: var(--font-math);
+  font-size: 1rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+  max-width: var(--measure);
+}
+.formula .hl { color: var(--accent); font-weight: 600; }
+
+/* Short aside: a tip, a video note, a "keep this in mind". */
+.aside {
+  margin: var(--space-5) 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  max-width: var(--measure);
+  font-size: 0.975rem;
+}
+.aside > :last-child { margin-bottom: 0; }
+.aside-label { display: block; margin-bottom: 4px; font-family: var(--font-math); font-size: 0.75rem; color: var(--decoder); }
+
+/* Tables: always inside .table-wrap so wide tables scroll on phones. */
+.table-wrap { margin: var(--space-5) 0; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+.table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.925rem; line-height: 1.45; }
+.table-wrap th, .table-wrap td { padding: 10px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border-soft); }
+.table-wrap th { font-weight: 650; background: var(--surface-2); white-space: nowrap; }
+.table-wrap tr:last-child td { border-bottom: 0; }
+.table-wrap td.num, .table-wrap th.num { text-align: right; font-family: var(--font-math); font-variant-numeric: tabular-nums; }
+
+/* Interactive figure: a live diagram with its own controls. */
+.ix {
+  margin: var(--space-7) 0;
+  padding: var(--space-5) clamp(16px, 3vw, 28px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.ix-title { margin: 0 0 4px; font-size: var(--step-1); font-weight: 600; }
+.ix-hint { margin: 0 0 var(--space-4); color: var(--ink-soft); font-size: 0.95rem; max-width: 62ch; }
+.ix-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-bottom: var(--space-4); }
+.ix-stage { overflow-x: auto; }
+.ix-stage svg, .ix-stage canvas { display: block; max-width: 100%; height: auto; }
+.ix-readout { margin: var(--space-4) 0 0; font-size: 0.975rem; line-height: 1.6; max-width: 62ch; }
+.ix-readout .math, .ix-readout b { color: var(--ink); }
+
+.ix-field { display: grid; gap: 4px; min-width: 200px; flex: 1 1 220px; }
+.ix-field label { display: flex; justify-content: space-between; gap: var(--space-3); font-size: 0.875rem; color: var(--ink-soft); }
+.ix-field output { font-family: var(--font-math); color: var(--accent); font-weight: 600; }
+.ix input[type="range"] { width: 100%; accent-color: var(--accent); min-height: 28px; }
+
+/* Toggle chips: a small set of mutually exclusive choices. Use aria-pressed. */
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chip {
+  min-height: 40px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink-soft);
+  font: 500 0.9rem/1.2 var(--font-read);
+  cursor: pointer;
+  transition: color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+.chip:hover { color: var(--ink); border-color: var(--ink-faint); }
+.chip[aria-pressed="true"] { color: var(--ink); background: var(--accent-soft); border-color: var(--accent); font-weight: 600; }
+
+/* Abbreviations that have a glossary entry. */
+abbr[data-term] { text-decoration: underline dotted var(--ink-faint); text-underline-offset: 3px; cursor: help; }
