@@ -223,7 +223,7 @@
 }
 
 /* ---------- part 6: equations ---------- */
-.l1-eqs { display: grid; gap: var(--space-6); max-width: var(--measure); }
+.l1-eqs { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); max-width: var(--measure); }
 .l1-eq h3 { font-size: var(--step-1); }
 .l1-eq .formula { margin: var(--space-3) 0; }
 .l1-eq p { color: var(--ink-soft); }

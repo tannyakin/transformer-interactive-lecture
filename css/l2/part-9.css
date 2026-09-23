@@ -117,7 +117,7 @@
 .l2p9-cell-sum { padding-top: 4px; border-top: 1px solid var(--border-soft); color: var(--encoder); }
 
 /* WordPiece splits */
-.l2p9-wp { max-width: var(--measure); margin: var(--space-4) 0 var(--space-5); font-family: var(--font-math); font-size: 0.95rem; line-height: 2.4; }
+.l2p9-wp { display: flex; flex-wrap: wrap; align-items: center; row-gap: 8px; max-width: var(--measure); margin: var(--space-4) 0 var(--space-5); font-family: var(--font-math); font-size: 0.95rem; line-height: 1.6; }
 .l2p9-wp-word { font-weight: 600; }
 .l2p9-wp-arrow, .l2p9-wp-plus { margin: 0 8px; color: var(--ink-faint); }
 .l2p9-wp-piece { padding: 3px 8px; border-radius: var(--radius-sm); background: var(--surface-2); }
