@@ -1,0 +1,8 @@
+{
+  "name": "transformer-interactive-lecture",
+  "private": true,
+  "description": "Interactive lecture notebooks for the AI UniPod LLM series. No build step, no dependencies.",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}
