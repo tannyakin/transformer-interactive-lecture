@@ -542,7 +542,7 @@
             title: "Add [CLS] and [SEP], then pad to 15",
             say:
               `[CLS] goes at the start as a placeholder for the sentiment, and [SEP] at the end. That makes ${p.framed.length} tokens, ` +
-              `so ${p.pad} [PAD] tokens fill it up to ${i.maxLen}. Padding lets sentences of different lengths travel together in one batch.`,
+              `so ${p.pad} <abbr data-term="[PAD]">[PAD]</abbr> tokens fill it up to ${i.maxLen}. Padding lets sentences of different lengths travel together in one batch.`,
             predict: {
               ask: `After adding [CLS] and [SEP], how many [PAD] tokens are needed to reach a length of ${i.maxLen}?`,
               choices: padChoices.map((x) => n(x)),
