@@ -96,7 +96,7 @@ test("fragment has the subparts and mounts every Part 10 walkthrough", () => {
   for (const id of ["l2-roberta-batches", "l2-dynamic-masking", "l2-kl-distill"]) {
     assert.ok(html.includes(`data-walk="${id}"`), id);
   }
-  for (const href of ["#p2-6", "#p3", "#p4", "#p6"]) assert.ok(html.includes(`href="${href}"`), href);
+  for (const href of ["#p2-6", "#p3-7", "#p4-6", "#p6-6"]) assert.ok(html.includes(`href="${href}"`), href);
   assert.ok(!html.includes(EM));
 });
 

@@ -1308,7 +1308,7 @@ attention scores  ≈  <span class="hl">4 · n · d</span> operations per token<
     <li><p><b>Compute.</b> The n² operations themselves.</p></li>
     <li><p><b>Memory capacity.</b> Storing an n × n matrix per head, per layer.</p></li>
     <li><p><b>Memory bandwidth.</b> GPUs have a small amount of very fast memory right beside the compute cores (<abbr data-term="SRAM">SRAM</abbr>) and a large amount of slower memory (<abbr data-term="HBM">HBM</abbr>, High Bandwidth Memory). Standard attention writes the huge score matrix out to slow memory and reads it back. Often the GPU spends more time <b>moving</b> data than <b>calculating</b> with it.</p></li>
-    <li><p><b>Inference memory: the <abbr data-term="KV cache">KV cache</abbr>.</b> When generating text, the model stores keys and values for every past token. We come back to this in <a href="#p7">Part 7</a>.</p></li>
+    <li><p><b>Inference memory: the <abbr data-term="KV cache">KV cache</abbr>.</b> When generating text, the model stores keys and values for every past token. We come back to this in <a href="#p7-2">Part 7.2</a>.</p></li>
   </ol>
 </div>
 
@@ -2420,10 +2420,10 @@ ALBERT:  30,000 × 128  then  128 × 768</div>
             <thead><tr><th>Old BERT</th><th>ModernBERT</th><th>Covered in</th></tr></thead>
             <tbody>
               <tr><td>learned absolute positions, 512 limit</td><td><strong><abbr data-term="RoPE">RoPE</abbr></strong>, 8,192-token context</td><td><a href="#p2-6">Part 2.6</a></td></tr>
-              <tr><td>post-norm</td><td><strong>pre-norm</strong></td><td><a href="#p3">Part 3.5</a></td></tr>
-              <tr><td><abbr data-term="GELU">GELU</abbr> <abbr data-term="FFN">FFN</abbr></td><td><strong><abbr data-term="GeGLU">GeGLU</abbr></strong> (the GELU version of the gated FFN)</td><td><a href="#p4">Part 4.6</a></td></tr>
-              <tr><td>full attention everywhere</td><td><strong>alternating global and local (sliding window) attention</strong></td><td><a href="#p6">Part 6</a></td></tr>
-              <tr><td>16 GB of data</td><td>about 2 trillion tokens, including code</td><td><a href="#p10-3">Part 10.1 lesson</a></td></tr>
+              <tr><td>post-norm</td><td><strong>pre-norm</strong></td><td><a href="#p3-7">Part 3.7</a></td></tr>
+              <tr><td><abbr data-term="GELU">GELU</abbr> <abbr data-term="FFN">FFN</abbr></td><td><strong><abbr data-term="GeGLU">GeGLU</abbr></strong> (the GELU version of the gated FFN)</td><td><a href="#p4-6">Part 4.6</a></td></tr>
+              <tr><td>full attention everywhere</td><td><strong>alternating global and local (sliding window) attention</strong></td><td><a href="#p6-6">Part 6.6</a></td></tr>
+              <tr><td>16 GB of data</td><td>about 2 trillion tokens, including code</td><td><a href="#p10-3">Part 10.3 lesson</a></td></tr>
             </tbody>
           </table>
         </div>
@@ -2497,12 +2497,12 @@ ALBERT:  30,000 × 128  then  128 × 768</div>
             <table>
               <thead><tr><th>Component</th><th class="l2p11-then">2017 Transformer</th><th class="l2p11-now">A modern LLM (e.g. Llama 3)</th><th>Taught in</th></tr></thead>
               <tbody>
-                <tr><td>Overall shape</td><td class="l2p11-then">encoder-decoder</td><td class="l2p11-now"><strong>decoder-only</strong></td><td><a href="#p8">Part 8</a></td></tr>
+                <tr><td>Overall shape</td><td class="l2p11-then">encoder-decoder</td><td class="l2p11-now"><strong>decoder-only</strong></td><td><a href="#p8-5">Part 8.5</a></td></tr>
                 <tr><td>Position</td><td class="l2p11-then">sinusoidal, added to input</td><td class="l2p11-now"><strong><abbr data-term="RoPE">RoPE</abbr></strong>, applied to q and k in every layer</td><td><a href="#p2-6">Part 2.6</a></td></tr>
-                <tr><td>Normalization</td><td class="l2p11-then">LayerNorm, post-norm</td><td class="l2p11-now"><strong><abbr data-term="RMSNorm">RMSNorm</abbr>, pre-norm</strong></td><td><a href="#p3">Part 3</a></td></tr>
-                <tr><td><abbr data-term="FFN">FFN</abbr></td><td class="l2p11-then"><abbr data-term="ReLU">ReLU</abbr></td><td class="l2p11-now"><strong><abbr data-term="SwiGLU">SwiGLU</abbr></strong> (sometimes Mixture of Experts)</td><td><a href="#p4">Part 4</a></td></tr>
-                <tr><td>Attention heads</td><td class="l2p11-then"><abbr data-term="MHA">MHA</abbr></td><td class="l2p11-now"><strong><abbr data-term="GQA">GQA</abbr></strong></td><td><a href="#p7">Part 7</a></td></tr>
-                <tr><td>Long sequences</td><td class="l2p11-then">full attention, 512 tokens</td><td class="l2p11-now">FlashAttention, sometimes sliding window layers, 128,000+ tokens</td><td><a href="#p5">Part 5</a>, <a href="#p6">Part 6</a></td></tr>
+                <tr><td>Normalization</td><td class="l2p11-then">LayerNorm, post-norm</td><td class="l2p11-now"><strong><abbr data-term="RMSNorm">RMSNorm</abbr>, pre-norm</strong></td><td><a href="#p3-6">Part 3.6</a>, <a href="#p3-7">3.7</a></td></tr>
+                <tr><td><abbr data-term="FFN">FFN</abbr></td><td class="l2p11-then"><abbr data-term="ReLU">ReLU</abbr></td><td class="l2p11-now"><strong><abbr data-term="SwiGLU">SwiGLU</abbr></strong> (sometimes Mixture of Experts)</td><td><a href="#p4-6">Part 4.6</a></td></tr>
+                <tr><td>Attention heads</td><td class="l2p11-then"><abbr data-term="MHA">MHA</abbr></td><td class="l2p11-now"><strong><abbr data-term="GQA">GQA</abbr></strong></td><td><a href="#p7-4">Part 7.4</a></td></tr>
+                <tr><td>Long sequences</td><td class="l2p11-then">full attention, 512 tokens</td><td class="l2p11-now">FlashAttention, sometimes sliding window layers, 128,000+ tokens</td><td><a href="#p5-5">Part 5.5</a>, <a href="#p6-6">6.6</a></td></tr>
                 <tr><td>Parameters</td><td class="l2p11-then">65M (base) to 213M (big)</td><td class="l2p11-now">8B to hundreds of billions</td><td></td></tr>
                 <tr><td>Training data</td><td class="l2p11-then">~4.5M sentence pairs (translation)</td><td class="l2p11-now">trillions of tokens (Llama 3: about 15 trillion)</td><td></td></tr>
               </tbody>
@@ -2549,7 +2549,7 @@ ALBERT:  30,000 × 128  then  128 × 768</div>
           </li>
           <li>
             <h4>Long context and efficient inference</h4>
-            <p>RoPE scaling, GQA, FlashAttention and sliding windows let models read whole codebases or books, which makes them useful for far more real tasks. Those are <a href="#p2-6">Part 2</a>, <a href="#p7">Part 7</a>, <a href="#p5">Part 5</a> and <a href="#p6">Part 6</a> of this lecture, doing real work.</p>
+            <p>RoPE scaling, GQA, FlashAttention and sliding windows let models read whole codebases or books, which makes them useful for far more real tasks. Those are <a href="#p2-6">Part 2.6</a>, <a href="#p7-4">Part 7.4</a>, <a href="#p5-5">Part 5.5</a> and <a href="#p6-1">Part 6</a> of this lecture, doing real work.</p>
           </li>
         </ol>
       </div>

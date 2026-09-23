@@ -2,6 +2,12 @@
 
 A running record of what changed in the lecture site and why. Newest first.
 
+## 2026-09-23: Cross-link precision pass
+
+- Audited every internal `#pN` link in `lecture-2.html` against the final subpart ids now that all 11 parts are built. Fixed cases where the visible text already named a subsection ("Part 3.5", "Part 4.6", "Part 10.1 lesson") but the link only pointed at the whole part, plus upgraded several "taught in" table references (RMSNorm, SwiGLU, GQA, FlashAttention, sliding-window attention, decoder-only shape, the KV cache callback) to their exact subparts.
+- Verified with a script that all 64 internal part cross-links resolve to a real `id` on the page; none dangle.
+- Applied the same fixes to the underlying `.fragments/l2-p5.html`, `l2-p10.html` and `l2-p11.html` sources and reassembled, so the fix survives a future rebuild.
+
 ## 2026-09-23: Lecture 2 design spec
 
 - Added `docs/specs/2026-09-23-lecture-2-design.md`, the agreed design for adding Lecture 2 and redesigning the site for self-study.
