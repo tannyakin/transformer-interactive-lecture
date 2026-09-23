@@ -1,0 +1,123 @@
+/* ============================================================
+   Lecture 2, Part 5: what attention costs.
+   Every colour comes from a token, so both themes just work.
+   ============================================================ */
+
+.l2p5-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.l2p5-btn {
+  min-height: 40px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink);
+  font: 500 0.9rem/1.2 var(--font-read);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+.l2p5-btn:hover:not(:disabled) { border-color: var(--accent); }
+.l2p5-btn:disabled { opacity: 0.45; cursor: default; }
+.l2p5-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* shared svg text */
+.l2p5-grow-svg text, .l2p5-cross-svg text, .l2p5-flash-svg text, .l2p5-mem-svg text {
+  font-family: var(--font-math);
+  font-size: 12px;
+  fill: var(--ink-soft);
+}
+
+/* ---------- growing grid ---------- */
+.l2p5-grow-svg { width: 100%; max-width: 400px; }
+.l2p5-frame { fill: none; stroke: var(--border); stroke-dasharray: 3 4; }
+.l2p5-cell { fill: var(--attn-soft); stroke: var(--attn); stroke-width: 0.8; }
+.l2p5-cell.is-half { fill: var(--accent-soft); stroke: var(--accent); }
+.l2p5-halfbox { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+.l2p5-grow-svg .l2p5-axis { fill: var(--ink-faint); }
+@media (prefers-reduced-motion: no-preference) {
+  .l2p5-cell.is-new { animation: l2p5-in 0.35s var(--ease-out) both; }
+}
+@keyframes l2p5-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- walkthrough panel ---------- */
+.l2p5-mem-svg { width: 100%; max-width: 320px; }
+.l2p5-mem-sq { fill: var(--attn-soft); stroke: var(--attn); stroke-width: 1; }
+.l2p5-mem-sq.is-orig { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.l2p5-mem-svg .l2p5-mem-label { fill: var(--ink); font-weight: 600; }
+.l2p5-mem-cap { margin: var(--space-2) 0 0; color: var(--ink-soft); font-size: 0.95rem; max-width: 36ch; }
+
+/* ---------- crossover chart ---------- */
+.l2p5-cross-svg { width: 100%; max-width: 640px; }
+.l2p5-zone { fill: var(--attn-soft); }
+.l2p5-cross-svg .l2p5-zone-label { fill: var(--attn); }
+.l2p5-axisline { stroke: var(--ink-faint); stroke-width: 1; }
+.l2p5-cross-svg .l2p5-tick { fill: var(--ink-faint); font-size: 11px; }
+.l2p5-ffn { stroke: var(--encoder); stroke-width: 3; }
+.l2p5-attn { stroke: var(--attn); stroke-width: 3; stroke-dasharray: 8 5; }
+.l2p5-cross-svg .l2p5-lab-ffn { fill: var(--encoder); font-weight: 600; }
+.l2p5-cross-svg .l2p5-lab-attn { fill: var(--attn); font-weight: 600; }
+.l2p5-crossline { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+.l2p5-crossdot { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.l2p5-cross-svg .l2p5-crosslab { fill: var(--ink); font-weight: 600; }
+.l2p5-nline { stroke: var(--accent); stroke-width: 1.5; }
+.l2p5-ndot-attn { fill: var(--attn); stroke: var(--surface); stroke-width: 1.5; }
+.l2p5-ndot-ffn { fill: var(--encoder); stroke: var(--surface); stroke-width: 1.5; }
+
+/* ---------- the four walls ---------- */
+.l2p5-walls { list-style: none; margin: var(--space-5) 0; padding: 0; max-width: var(--measure); counter-reset: wall; }
+.l2p5-walls li {
+  counter-increment: wall;
+  display: grid;
+  grid-template-columns: 2.4rem 1fr;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--border-soft);
+}
+.l2p5-walls li:last-child { border-bottom: 1px solid var(--border-soft); }
+.l2p5-walls li::before {
+  content: counter(wall);
+  font-size: 1.9rem;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--accent);
+}
+.l2p5-walls p { margin: 0; }
+.l2p5-walls b { font-weight: 650; }
+
+/* ---------- FlashAttention tiling ---------- */
+.l2p5-flash-svg { width: 100%; max-width: 480px; }
+.l2p5-hbm { fill: var(--surface-2); stroke: var(--border); }
+.l2p5-sram { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.l2p5-flash-svg .l2p5-memlab { fill: var(--ink); font-weight: 600; }
+.l2p5-flash-svg .l2p5-tick { fill: var(--ink-faint); font-size: 11px; }
+.l2p5-tile { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
+.l2p5-tile.is-stored { fill: var(--attn); stroke: var(--attn); fill-opacity: 0.55; }
+.l2p5-tile.is-passed { fill: none; stroke: var(--ink-faint); stroke-dasharray: 4 3; }
+.l2p5-tile.is-current { stroke: var(--accent); stroke-width: 3; stroke-dasharray: none; }
+.l2p5-tile.is-live { fill: var(--accent); fill-opacity: 0.45; stroke: var(--accent); stroke-width: 2; }
+.l2p5-link { stroke: var(--attn); stroke-width: 2; }
+.l2p5-link.is-quiet { stroke: var(--accent); stroke-dasharray: 3 3; }
+.l2p5-out { fill: none; stroke: var(--border); }
+.l2p5-out.is-done { fill: var(--encoder-soft); stroke: var(--encoder); }
+@media (prefers-reduced-motion: no-preference) {
+  .l2p5-tile, .l2p5-out { transition: fill 0.25s var(--ease-out), stroke 0.25s var(--ease-out); }
+  .l2p5-bar > span { transition: width 0.3s var(--ease-out); }
+}
+
+.l2p5-flash .ix-readout { display: grid; gap: var(--space-2); }
+.l2p5-meter {
+  display: grid;
+  grid-template-columns: minmax(10rem, max-content) minmax(60px, 1fr) max-content;
+  gap: var(--space-3);
+  align-items: center;
+  font-size: 0.925rem;
+}
+.l2p5-meter b { font-family: var(--font-math); font-weight: 600; font-variant-numeric: tabular-nums; }
+.l2p5-bar { height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.l2p5-bar > span { display: block; height: 100%; background: var(--encoder); }
+.l2p5-meter.is-hbm .l2p5-bar > span { background: var(--attn); }
+.l2p5-note { display: block; margin-top: var(--space-2); color: var(--ink-soft); }
+.l2p5-note b { color: var(--ink); }
+@media (max-width: 480px) {
+  .l2p5-meter { grid-template-columns: 1fr max-content; }
+  .l2p5-meter .l2p5-bar { grid-column: 1 / -1; grid-row: 2; }
+}

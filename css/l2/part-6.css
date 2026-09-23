@@ -1,0 +1,89 @@
+/* ============================================================
+   Lecture 2, Part 6: sparse attention.
+   Every colour comes from a token, so both themes just work.
+   ============================================================ */
+
+.l2p6-btn {
+  min-height: 40px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink);
+  font: 500 0.9rem/1.2 var(--font-read);
+  cursor: pointer;
+}
+.l2p6-btn:hover:not(:disabled) { border-color: var(--accent); }
+.l2p6-btn:disabled { opacity: 0.45; cursor: default; }
+
+/* ---------- Longformer grid ---------- */
+.l2p6-lgrid { border-collapse: separate; border-spacing: 3px; font-family: var(--font-math); font-size: 0.8125rem; }
+.l2p6-lgrid th { font-weight: 500; color: var(--ink-soft); }
+.l2p6-colh { vertical-align: bottom; height: 4.6rem; padding: 0; }
+.l2p6-colh span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; padding-bottom: 4px; }
+.l2p6-colh.is-target { color: var(--ink); font-weight: 650; }
+.l2p6-q {
+  min-height: 30px;
+  width: 100%;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  text-align: right;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.l2p6-q:hover { color: var(--ink); border-color: var(--border); }
+.l2p6-q[aria-pressed="true"] { color: var(--ink); font-weight: 650; border-color: var(--accent); background: var(--accent-soft); }
+.l2p6-c {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+.l2p6-c.is-band { background: color-mix(in srgb, var(--encoder) 55%, transparent); }
+.l2p6-c.is-glob { background: color-mix(in srgb, var(--decoder) 55%, transparent); }
+.is-sel .l2p6-c { box-shadow: inset 0 0 0 1px var(--accent); }
+.is-sel .l2p6-c.is-band, .is-sel .l2p6-c.is-glob { box-shadow: inset 0 0 0 2px var(--accent); }
+.l2p6-c.is-hop { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink); }
+@media (max-width: 420px) {
+  .l2p6-c { width: 24px; height: 24px; }
+  .l2p6-lgrid { border-spacing: 2px; font-size: 0.75rem; }
+}
+
+.l2p6-key { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: var(--space-3) 0 0; padding: 0; list-style: none; font-size: 0.875rem; color: var(--ink-soft); }
+.l2p6-key li { display: inline-flex; align-items: center; gap: 8px; }
+.l2p6-sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; flex: none; }
+.l2p6-sw.is-band, .l2p6-sw.is-window { background: color-mix(in srgb, var(--encoder) 55%, transparent); }
+.l2p6-sw.is-glob, .l2p6-sw.is-global { background: color-mix(in srgb, var(--decoder) 55%, transparent); }
+.l2p6-sw.is-strided { width: 10px; height: 10px; margin: 2px; background: var(--accent); border-radius: 1px; }
+.l2p6-sw.is-random { border: 2px solid var(--attn); border-radius: 50%; }
+.l2p6-sw.is-hop { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink); background: transparent; }
+.l2p6-key [data-count] { font-family: var(--font-math); font-size: 0.8125rem; color: var(--ink-faint); }
+
+/* ---------- pattern explorer ---------- */
+.l2p6-pat-svg { width: 100%; max-width: 380px; }
+.l2p6-off { fill: none; stroke: var(--border-soft); }
+.l2p6-k-window { fill: color-mix(in srgb, var(--encoder) 60%, transparent); }
+.l2p6-k-global { fill: color-mix(in srgb, var(--decoder) 60%, transparent); }
+.l2p6-k-strided { fill: var(--accent); }
+.l2p6-k-random { fill: none; stroke: var(--attn); stroke-width: 2.2; }
+.l2p6-pat-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+
+/* ---------- receptive field ---------- */
+.l2p6-reach-svg { width: 100%; max-width: 560px; }
+.l2p6-reach-svg text { font-family: var(--font-math); font-size: 11px; fill: var(--ink-faint); }
+.l2p6-reach-svg .l2p6-rlab.is-off { opacity: 0.4; }
+.l2p6-reach-svg .l2p6-rlab.is-reached { fill: var(--ink); font-weight: 600; }
+.l2p6-edge { stroke: var(--accent); stroke-width: 1; stroke-opacity: 0.45; }
+.l2p6-node { fill: var(--surface-2); stroke: var(--border); }
+.l2p6-node.is-off { opacity: 0.3; }
+.l2p6-node.is-on { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.l2p6-node.is-focus { fill: var(--accent); stroke: var(--ink); stroke-width: 1.5; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .l2p6-c, .l2p6-q { transition: background 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out); }
+}
