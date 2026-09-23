@@ -1,0 +1,116 @@
+/* ============================================================
+   Lecture 2, Part 8: the three architecture families.
+   The causal mask grid, the family switcher and T5 examples.
+   ============================================================ */
+
+/* ---------- causal mask you can poke ---------- */
+.l2p8-maskgrid {
+  display: grid;
+  grid-template-columns: minmax(4.6rem, auto) repeat(4, minmax(3rem, 4.5rem));
+  gap: 6px;
+  width: 100%;
+  max-width: 26rem;
+  font-family: var(--font-math);
+  font-size: 0.875rem;
+}
+.l2p8-colhead, .l2p8-rowbtn { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; color: var(--ink-soft); font-size: 0.75rem; }
+.l2p8-colhead small, .l2p8-rowbtn small { font-family: var(--font-read); font-size: 0.8125rem; color: var(--ink); }
+.l2p8-rowbtn {
+  min-height: 44px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-math);
+  cursor: pointer;
+}
+.l2p8-rowbtn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.l2p8-mcell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: opacity 0.15s var(--ease-out);
+}
+.l2p8-mcell.is-open { background: var(--encoder-soft); color: var(--ink); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--encoder) 50%, transparent); }
+.l2p8-mcell.is-blocked {
+  color: var(--attn);
+  background: repeating-linear-gradient(135deg, var(--attn-soft) 0 5px, transparent 5px 10px);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.l2p8-maskgrid:has(.is-row) .l2p8-mcell:not(.is-row) { opacity: 0.35; }
+.l2p8-mcell.is-row { font-weight: 700; }
+.l2p8-mcell.is-row.is-open { box-shadow: inset 0 0 0 2px var(--encoder); }
+
+.l2p8-strip { display: flex; flex-wrap: wrap; gap: 8px; margin: var(--space-4) 0 0; }
+.l2p8-tok { padding: 2px 10px; border-radius: 999px; font-size: 0.95rem; border: 1px solid var(--border); }
+.l2p8-tok.is-seen { background: var(--encoder-soft); border-color: var(--encoder); }
+.l2p8-tok.is-self { background: var(--accent-soft); border-color: var(--accent); font-weight: 650; }
+.l2p8-tok.is-hidden { color: var(--ink-faint); text-decoration: line-through; border-style: dashed; }
+
+/* ---------- family switcher ---------- */
+.l2p8-fam { display: flex; flex-wrap: wrap; gap: var(--space-5) var(--space-6); align-items: flex-start; }
+.l2p8-flow { flex: 1 1 260px; display: flex; gap: var(--space-3); align-items: flex-start; }
+.l2p8-flow.is-two { flex-basis: 420px; }
+.l2p8-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: stretch; }
+.l2p8-io { margin: 0; padding: 6px 10px; font-size: 0.875rem; line-height: 1.4; color: var(--ink-soft); border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center; }
+.l2p8-block { padding: var(--space-3); border-radius: var(--radius); text-align: center; line-height: 1.3; }
+.l2p8-block b { display: block; font-size: 1rem; }
+.l2p8-block small { display: block; font-size: 0.8125rem; color: var(--ink-soft); }
+.l2p8-block.is-enc { background: var(--encoder-soft); box-shadow: inset 0 0 0 1.5px var(--encoder); }
+.l2p8-block.is-dec { background: var(--decoder-soft); box-shadow: inset 0 0 0 1.5px var(--decoder); }
+.l2p8-arrow { width: 22px; height: 22px; margin: 4px auto; fill: none; stroke: var(--ink-faint); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.l2p8-cross { flex: 0 1 7.5rem; align-self: center; text-align: center; font-size: 0.8125rem; line-height: 1.3; color: var(--attn); }
+.l2p8-cross span { display: block; font-weight: 650; }
+.l2p8-cross small { display: block; color: var(--ink-soft); }
+.l2p8-arrow.is-side { stroke: var(--attn); width: 28px; height: 28px; }
+@media (max-width: 480px) {
+  .l2p8-flow.is-two { flex-direction: column; align-items: stretch; }
+  .l2p8-flow.is-two .l2p8-cross { align-self: stretch; }
+  .l2p8-arrow.is-side { transform: rotate(90deg); }
+}
+
+.l2p8-masks { flex: 1 1 220px; display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-5); }
+.l2p8-maskfig { margin: 0; }
+.l2p8-maskfig figcaption { max-width: 22ch; margin-bottom: var(--space-2); font-size: 0.8125rem; line-height: 1.35; color: var(--ink-soft); }
+.l2p8-mini { display: grid; grid-template-columns: auto repeat(var(--n), 1.6rem); gap: 3px; align-items: center; font-size: 0.6875rem; }
+.l2p8-mini-col { text-align: center; color: var(--ink-faint); overflow: hidden; }
+.l2p8-mini-row { padding-right: 4px; text-align: right; color: var(--ink-soft); }
+.l2p8-mini-cell { height: 1.6rem; border-radius: 3px; }
+.l2p8-mini-cell.is-open { background: var(--accent); }
+.l2p8-mini-cell.is-blocked { background: repeating-linear-gradient(135deg, var(--border) 0 3px, transparent 3px 6px); box-shadow: inset 0 0 0 1px var(--border); }
+
+.l2p8-families .ix-readout { max-width: 68ch; }
+.l2p8-famname { margin: 0 0 var(--space-2); font-size: var(--step-1); }
+.l2p8-points { margin: 0 0 var(--space-3); padding-left: 1.2em; }
+.l2p8-points li + li { margin-top: 0.3em; }
+.l2p8-facts { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); }
+.l2p8-facts dt { font-weight: 650; }
+.l2p8-facts dd { margin: 0; }
+@media (max-width: 480px) {
+  .l2p8-facts { grid-template-columns: 1fr; gap: 2px; }
+  .l2p8-facts dd { margin-bottom: var(--space-2); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .l2p8-fam { animation: l2p8-in 0.3s var(--ease-out); }
+}
+@keyframes l2p8-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .l2p8-mcell { transition: none; }
+}
+
+/* ---------- T5 text in, text out ---------- */
+.l2p8-t5 { margin: var(--space-5) 0; max-width: var(--measure); display: grid; gap: var(--space-3); }
+.l2p8-t5-pair {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: 2px var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.l2p8-t5 dt { font-family: var(--font-math); font-size: 0.8125rem; color: var(--ink-faint); padding-top: 3px; }
+.l2p8-t5 dd { margin: 0; font-family: var(--font-math); font-size: 0.9rem; overflow-wrap: anywhere; }
+.l2p8-t5 dt:nth-of-type(2) + dd { color: var(--encoder); font-weight: 600; }
