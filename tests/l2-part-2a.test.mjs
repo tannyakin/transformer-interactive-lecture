@@ -9,7 +9,7 @@ const M = require("../js/core/math.js");
 require("../js/lecture-2/part-2a.js");
 const defs = globalThis.Lecture.defs;
 const P2 = globalThis.Lecture.l2p2a;
-const FRAGMENT = readFileSync(new URL("../.fragments/l2-p2a.html", import.meta.url), "utf8");
+const FRAGMENT = readFileSync(new URL("../lecture-2.html", import.meta.url), "utf8");
 
 const r3 = (xs) => xs.map((x) => M.round(x, 3));
 function block(steps, key) {

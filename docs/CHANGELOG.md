@@ -2,6 +2,12 @@
 
 A running record of what changed in the lecture site and why. Newest first.
 
+## 2026-09-23: Visual design pass, code review, and build-scratch cleanup
+
+- Visual design pass: checked the shipped pages against the design system's own rules (checked-contrast token comment, no eyebrow/gradient-text/side-stripe-border patterns, purposeful rather than decorative use of backdrop-blur) and confirmed every text/background pairing in `css/tokens.css` clears WCAG AA (4.87:1 to 16.74:1). Spot-checked the hero, a worked-example walkthrough card, a comparison table, and Lecture 1's live attention demo in both themes and at 375px and 1440px widths. No changes needed; the build already met the bar.
+- Code review pass: verified all 18 JS modules share the same IIFE/export wrapper, every `<script>`/`<link>` reference on both pages resolves to a file that exists (and vice versa, no orphans), no duplicate `id` attributes on either page (203 on Lecture 2, 84 on Lecture 1), no debug leftovers (`console.log`, `TODO`, `FIXME`), and dynamic content is written with `textContent` rather than interpolated into `innerHTML`. No findings.
+- Removed the gitignored `.fragments/` and `.superpowers/` build-scratch directories now that both lectures are complete and `lecture-2.html` is the stable, committed artifact. This broke 9 tests that read the fragment files directly instead of the assembled page; repointed them at `lecture-2.html` (slicing to the relevant `<section>` for the two tests that whitelist every glossary term in scope) and dropped two now-pointless `existsSync` skip-guards so their assertions actually run. All 135 tests pass.
+
 ## 2026-09-23: Cross-link precision pass
 
 - Audited every internal `#pN` link in `lecture-2.html` against the final subpart ids now that all 11 parts are built. Fixed cases where the visible text already named a subsection ("Part 3.5", "Part 4.6", "Part 10.1 lesson") but the link only pointed at the whole part, plus upgraded several "taught in" table references (RMSNorm, SwiGLU, GQA, FlashAttention, sliding-window attention, decoder-only shape, the KV cache callback) to their exact subparts.

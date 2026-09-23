@@ -36,7 +36,7 @@ test("each step links back to the part that taught it", () => {
 });
 
 test("fragment has the subparts, the walkthrough and the toggle table", () => {
-  const html = readFileSync(new URL("../.fragments/l2-p11.html", import.meta.url), "utf8");
+  const html = readFileSync(new URL("../lecture-2.html", import.meta.url), "utf8");
   for (let i = 1; i <= 5; i++) assert.ok(html.includes(`id="p11-${i}"`), "p11-" + i);
   assert.ok(html.includes('data-walk="l2-llama-token"'));
   assert.ok(html.includes('id="l2p11-then-now"'));

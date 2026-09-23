@@ -2,8 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { existsSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
 
 const require = createRequire(import.meta.url);
 const M = require("../js/core/math.js");
@@ -62,9 +61,7 @@ test("generation counter: one new K/V pair per step with the cache, all of them 
 test("Part 7 text has no em dash and the page wiring is consistent", () => {
   const def = defs["l2-kv-cache"];
   assert.ok(!(JSON.stringify(def.build(def.input)) + def.setup).includes(EM));
-  const frag = fileURLToPath(new URL("../.fragments/l2-p7.html", import.meta.url));
-  if (!existsSync(frag)) return;
-  const html = readFileSync(frag, "utf8");
+  const html = readFileSync(new URL("../lecture-2.html", import.meta.url), "utf8");
   assert.ok(!html.includes(EM));
   assert.ok(html.includes('data-walk="l2-kv-cache"'));
   for (const id of ["p7-1", "p7-2", "p7-3", "p7-4", "p7-5", "l2p7-generate", "l2p7-groups"]) assert.ok(html.includes(`id="${id}"`), id);

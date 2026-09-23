@@ -91,7 +91,7 @@ test("every walkthrough has 4 to 7 steps and 1 or 2 predict stops", () => {
 });
 
 test("fragment has the subparts and mounts every Part 10 walkthrough", () => {
-  const html = readFileSync(new URL("../.fragments/l2-p10.html", import.meta.url), "utf8");
+  const html = readFileSync(new URL("../lecture-2.html", import.meta.url), "utf8");
   for (let i = 1; i <= 8; i++) assert.ok(html.includes(`id="p10-${i}"`), "p10-" + i);
   for (const id of ["l2-roberta-batches", "l2-dynamic-masking", "l2-kl-distill"]) {
     assert.ok(html.includes(`data-walk="${id}"`), id);

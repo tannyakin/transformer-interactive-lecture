@@ -142,7 +142,7 @@ test("NSP draws label pairs honestly and builds the notes' input", () => {
 });
 
 test("part 9 files contain no em dashes", () => {
-  for (const f of ["../js/lecture-2/part-9.js", "../css/l2/part-9.css", "../.fragments/l2-p9.html"]) {
+  for (const f of ["../js/lecture-2/part-9.js", "../css/l2/part-9.css", "../lecture-2.html"]) {
     assert.ok(!readFileSync(new URL(f, import.meta.url), "utf8").includes(EM), f);
   }
   for (const id of ["l2-bert-params", "l2-mlm", "l2-bert-sentiment"]) {

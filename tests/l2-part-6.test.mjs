@@ -9,7 +9,8 @@ require("../js/core/math.js");
 require("../js/lecture-2/part-6.js");
 const defs = globalThis.Lecture.defs;
 const P6 = globalThis.Lecture.l2p6;
-const FRAG = readFileSync(new URL("../.fragments/l2-p6.html", import.meta.url), "utf8");
+const PAGE = readFileSync(new URL("../lecture-2.html", import.meta.url), "utf8");
+const FRAG = PAGE.slice(PAGE.indexOf('id="p6"'), PAGE.indexOf('id="p7"'));
 
 function block(steps, key) {
   for (const s of steps) for (const b of s.blocks) if (b.key === key) return b;
