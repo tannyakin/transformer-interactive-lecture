@@ -440,6 +440,8 @@ code { padding: 1px 6px; border-radius: 4px; background: var(--surface-2); }
 .ix-title { margin: 0 0 4px; font-size: var(--step-1); font-weight: 600; }
 .ix-hint { margin: 0 0 var(--space-4); color: var(--ink-soft); font-size: 0.95rem; max-width: 62ch; }
 .ix-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-bottom: var(--space-4); }
+/* Positioned so absolutely placed children (like .sr-only labels) stay inside the scroll box. */
+.ix-stage, .table-wrap, .formula, .wt-blocks { position: relative; }
 .ix-stage { overflow-x: auto; }
 .ix-stage svg, .ix-stage canvas { display: block; max-width: 100%; height: auto; }
 .ix-readout { margin: var(--space-4) 0 0; font-size: 0.975rem; line-height: 1.6; max-width: 62ch; }
