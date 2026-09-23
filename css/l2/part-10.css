@@ -1,0 +1,179 @@
+/* ============================================================
+   Lecture 2, Part 10: after BERT. Classes are prefixed l2p10-.
+   ============================================================ */
+
+/* ---------- RoBERTa's changes: two columns, one rule between ---------- */
+.l2p10-changes {
+  display: grid;
+  gap: var(--space-5) var(--space-7);
+  margin: var(--space-5) 0 var(--space-6);
+  max-width: 980px;
+}
+@media (min-width: 760px) {
+  .l2p10-changes { grid-template-columns: 1fr 1fr; }
+  .l2p10-col + .l2p10-col { border-left: 1px solid var(--border-soft); padding-left: var(--space-7); }
+}
+.l2p10-col h4 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+.l2p10-list { margin: 0; padding-left: 1.4em; }
+.l2p10-list li { padding-left: 0.3em; margin-bottom: var(--space-4); }
+.l2p10-list li::marker { font-family: var(--font-math); color: var(--accent); font-weight: 600; }
+.l2p10-list p { margin: 0; line-height: var(--lh-body); }
+
+/* ---------- walkthrough panels ---------- */
+.l2p10-area, .l2p10-kbars { width: 100%; max-width: 420px; height: auto; display: block; }
+.l2p10-axis { stroke: var(--ink-faint); stroke-width: 1; }
+.l2p10-axis-t, .l2p10-tick { fill: var(--ink-faint); font: 11px var(--font-math); }
+.l2p10-r-bert { fill: var(--encoder); }
+.l2p10-r-rob { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.l2p10-r-label { fill: var(--ink); font: 600 12px var(--font-math); }
+.l2p10-r-big { fill: var(--accent); font: 700 22px var(--font-math); }
+.l2p10-r-small { fill: var(--ink-soft); font: 11px var(--font-math); }
+.l2p10-area-cap { margin: var(--space-2) 0 0; font-size: 0.875rem; color: var(--ink-soft); max-width: 42ch; }
+
+.l2p10-k-teacher { fill: var(--encoder); }
+.l2p10-k-student { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 2; }
+.l2p10-k-teacher.is-hl { stroke: var(--ink); stroke-width: 2; }
+.l2p10-k-student.is-hl { stroke-width: 2.5; }
+.l2p10-k-key { fill: var(--ink-soft); font: 11px var(--font-math); }
+.l2p10-k-val { fill: var(--encoder); font: 600 11px var(--font-math); }
+.l2p10-k-val.is-s { fill: var(--accent); }
+.l2p10-k-cls { fill: var(--ink-soft); font: 12px var(--font-read); }
+.l2p10-kl-read { margin: var(--space-2) 0 0; font-family: var(--font-math); font-size: 0.9rem; color: var(--ink-soft); }
+.l2p10-kl-read b { color: var(--encoder); font-size: 1.1rem; }
+
+/* ---------- re-roll the mask ---------- */
+.l2p10-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.l2p10-act {
+  min-height: 40px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink);
+  font: 500 0.9rem/1.2 var(--font-read);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+.l2p10-act:hover:not(:disabled) { border-color: var(--accent); }
+.l2p10-act.is-main { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.l2p10-act:disabled { opacity: 0.4; cursor: default; }
+.l2p10-act:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.l2p10-tokens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.l2p10-tok {
+  display: inline-grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 5px 8px 3px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-family: var(--font-math);
+  font-size: 0.875rem;
+  transition: background 0.25s var(--ease-out), color 0.25s var(--ease-out);
+}
+.l2p10-tok-i { font-size: 0.65rem; color: var(--ink-faint); }
+.l2p10-tok.is-masked {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.l2p10-epochs-wrap { margin-top: var(--space-4); }
+.l2p10-epochs { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 3px; max-width: 520px; }
+.l2p10-ep {
+  display: inline-block;
+  height: 12px;
+  min-width: 8px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+.l2p10-ep.is-new { background: var(--encoder); border-color: var(--encoder); }
+.l2p10-ep.is-repeat { background: transparent; border: 1.5px solid var(--decoder); background-image: repeating-linear-gradient(135deg, var(--decoder-soft) 0 3px, transparent 3px 6px); }
+.l2p10-ep.is-cur { outline: 2px solid var(--ink); outline-offset: 1px; }
+.l2p10-epochs-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: var(--space-2) 0 0; font-size: 0.8125rem; color: var(--ink-soft); }
+.l2p10-epochs-key .l2p10-ep { width: 16px; }
+.l2p10-epochs-key .l2p10-ep.is-repeat { margin-left: var(--space-3); }
+
+/* ---------- the lesson ---------- */
+.l2p10-lesson {
+  margin: var(--space-6) 0;
+  max-width: 24ch;
+  font-size: var(--step-2);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* ---------- DistilBERT ---------- */
+.l2p10-cap { caption-side: top; text-align: left; padding: 10px 14px 0; font-size: 0.875rem; color: var(--ink-soft); }
+.l2p10-quote {
+  margin: var(--space-5) 0;
+  padding: 0 0 0 var(--space-5);
+  max-width: 40ch;
+}
+.l2p10-quote p { margin: 0; font-size: var(--step-1); font-style: italic; line-height: 1.45; }
+.l2p10-quote footer { margin-top: var(--space-2); font-family: var(--font-math); font-size: 0.8125rem; color: var(--ink-faint); }
+.l2p10-quote footer::before { content: "\2013  "; }
+
+.l2p10-setup { margin: var(--space-5) 0; max-width: 460px; }
+.l2p10-setup svg { width: 100%; height: auto; display: block; }
+.l2p10-node { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.2; }
+.l2p10-node.is-teacher { fill: var(--encoder-soft); stroke: var(--encoder); }
+.l2p10-node.is-student { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 4 2; }
+.l2p10-node.is-loss { fill: var(--attn-soft); stroke: var(--attn); }
+.l2p10-node-t { fill: var(--ink); font: 600 13px var(--font-read); }
+.l2p10-node-s { fill: var(--ink-soft); font: 12px var(--font-math); }
+.l2p10-edge { fill: none; stroke: var(--ink-faint); stroke-width: 1.4; }
+.l2p10-arrowhead { fill: var(--ink-faint); }
+
+.l2p10-soft-bars { display: grid; gap: 10px; max-width: 520px; }
+.l2p10-soft-row { display: grid; grid-template-columns: 5.5rem 1fr 3.5ch; gap: var(--space-3); align-items: center; font-family: var(--font-math); font-variant-numeric: tabular-nums; }
+.l2p10-soft-lab { font-size: 0.875rem; color: var(--ink-soft); }
+.l2p10-soft-row.is-true .l2p10-soft-lab { color: var(--ink); font-weight: 600; }
+.l2p10-soft-row.is-true .l2p10-soft-lab::after { content: " \2713"; color: var(--encoder); }
+.l2p10-soft-track { position: relative; height: 18px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.l2p10-soft-fill { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--encoder); transition: width 0.45s var(--ease-out); }
+.l2p10-soft[data-mode="hard"] .l2p10-soft-fill { background: var(--ink-faint); }
+.l2p10-soft-val { text-align: right; font-size: 0.9rem; }
+
+/* ---------- student slider ---------- */
+.l2p10-slide-grid { display: grid; gap: var(--space-4) var(--space-6); align-items: start; }
+@media (min-width: 760px) { .l2p10-slide-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.l2p10-slide-terms { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-3); font-family: var(--font-math); font-variant-numeric: tabular-nums; }
+.l2p10-term { display: grid; gap: 2px; font-size: 0.8125rem; color: var(--ink-soft); }
+.l2p10-term b { font-size: 1rem; color: var(--ink); font-weight: 500; }
+.l2p10-term.is-total b { color: var(--encoder); font-weight: 700; }
+.l2p10-curve svg { width: 100%; max-width: 360px; height: auto; display: block; }
+.l2p10-curve-line { fill: none; stroke: var(--encoder); stroke-width: 2; }
+.l2p10-curve-dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+
+/* ---------- ALBERT, ELECTRA, DeBERTa ---------- */
+.l2p10-model { margin-top: var(--space-6); }
+.l2p10-model h4 { margin: 0 0 var(--space-3); font-size: var(--step-1); font-weight: 600; line-height: 1.35; }
+.l2p10-who { display: block; font-family: var(--font-math); font-size: 0.8125rem; font-weight: 400; color: var(--ink-faint); margin-top: 2px; }
+.l2p10-electra { margin: var(--space-5) 0; overflow-x: auto; }
+.l2p10-e-row { display: grid; grid-template-columns: 7.5rem repeat(5, minmax(4.6rem, max-content)); gap: 6px; align-items: center; margin-bottom: 6px; }
+.l2p10-e-lab { font-family: var(--font-math); font-size: 0.8125rem; color: var(--ink-faint); }
+.l2p10-e-tok { padding: 5px 8px; border-radius: var(--radius-sm); background: var(--surface-2); text-align: center; font-family: var(--font-math); font-size: 0.875rem; }
+.l2p10-e-tok.is-swap { background: var(--decoder-soft); color: var(--decoder); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--decoder); }
+.l2p10-e-tok.is-verdict:not(.is-swap) { color: var(--encoder); }
+.l2p10-electra figcaption { margin-top: var(--space-2); font-size: 0.875rem; color: var(--ink-soft); max-width: 60ch; }
+
+/* ---------- family table ---------- */
+.l2p10-family td:first-child { font-weight: 600; white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .l2p10-soft-fill, .l2p10-tok, .l2p10-act { transition: none; }
+}
