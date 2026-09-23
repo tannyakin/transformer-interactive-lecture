@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const SKIP_DIRS = new Set([".git", ".superpowers", "node_modules", ".playwright-mcp"]);
-const EXTS = new Set([".html", ".js", ".css", ".md"]);
-const EM_DASH = "—";
+const EXTS = new Set([".html", ".js", ".mjs", ".css", ".md"]);
+const EM_DASH = "2014";
 
 function* walk(dir) {
   for (const name of readdirSync(dir)) {
