@@ -1,0 +1,112 @@
+/* ============================================================
+   Design tokens shared by every lecture page.
+   Role colours keep one meaning across the whole site:
+   teal = encoder / computed result, orange = decoder,
+   red = attention, blue = the value in focus right now.
+   Every text colour below is checked at 4.5:1 or better.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..600&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root,
+:root:not([data-theme="light"]) {
+  color-scheme: dark;
+  --bg: #0b0d12;
+  --bg-deep: #08090d;
+  --surface: #12151c;
+  --surface-2: #1a1f29;
+  --surface-3: #222836;
+  --ink: #eceef3;
+  --ink-soft: #9aa3b7;
+  --ink-faint: #8189a0;
+  --border: #262c38;
+  --border-soft: #1c212b;
+
+  --encoder: #3ee6c4;
+  --encoder-soft: rgba(62, 230, 196, 0.13);
+  --decoder: #ffa057;
+  --decoder-soft: rgba(255, 160, 87, 0.13);
+  --attn: #ff6b85;
+  --attn-soft: rgba(255, 107, 133, 0.14);
+  --accent: #7fa3ff;
+  --accent-soft: rgba(127, 163, 255, 0.15);
+  --accent-ink: #0b0d12;
+
+  --shadow-lg: 0 24px 60px -28px rgba(0, 0, 0, 0.75);
+  --shadow-sm: 0 6px 18px -10px rgba(0, 0, 0, 0.6);
+  --backdrop: rgba(4, 5, 8, 0.62);
+  --lh-body: 1.72;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f6f8;
+  --bg-deep: #eceef2;
+  --surface: #ffffff;
+  --surface-2: #eef0f4;
+  --surface-3: #e3e6ec;
+  --ink: #171a21;
+  --ink-soft: #4f5566;
+  --ink-faint: #646b7b;
+  --border: #d7dbe3;
+  --border-soft: #e6e9ee;
+
+  --encoder: #0a7a66;
+  --encoder-soft: rgba(10, 122, 102, 0.1);
+  --decoder: #a14e16;
+  --decoder-soft: rgba(161, 78, 22, 0.1);
+  --attn: #c02c47;
+  --attn-soft: rgba(192, 44, 71, 0.09);
+  --accent: #2f5fd6;
+  --accent-soft: #eaeffb;
+  --accent-ink: #ffffff;
+
+  --shadow-lg: 0 24px 60px -30px rgba(20, 28, 48, 0.28);
+  --shadow-sm: 0 6px 18px -12px rgba(20, 28, 48, 0.25);
+  --backdrop: rgba(20, 24, 34, 0.38);
+  --lh-body: 1.66;
+}
+
+:root {
+  /* Type: one reading serif with weight contrast, one mono for maths. */
+  --font-read: "Literata", Georgia, "Times New Roman", serif;
+  --font-math: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
+  --step-2: clamp(1.45rem, 1.2rem + 1vw, 1.75rem);
+  --step-3: clamp(1.9rem, 1.45rem + 2.2vw, 2.75rem);
+  --step-4: clamp(2.5rem, 1.7rem + 4vw, 4.25rem);
+
+  --measure: 68ch;
+  --wrap: 1120px;
+  --gutter: clamp(16px, 4vw, 32px);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+  --space-9: 112px;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Stacking order, lowest to highest. */
+  --z-sticky: 20;
+  --z-header: 30;
+  --z-backdrop: 40;
+  --z-drawer: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+
+  --header-h: 56px;
+}
