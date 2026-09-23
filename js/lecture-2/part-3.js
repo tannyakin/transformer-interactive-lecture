@@ -205,7 +205,7 @@
 
       const normalizePredict = before
         ? {
-            ask: "The input is now 10 times bigger. What will the normalised values be?",
+            ask: "The input is now 10 times bigger. What will the normalized values be?",
             choices: [
               "10 times smaller: " + vstr(before.map((v) => v / factor), 4),
               "Exactly the same as before: " + vstr(before, 3),
@@ -290,7 +290,7 @@
           title: "Scale and shift with γ and β",
           say:
             "At the start of training γ = " + num(gamma) + " and β = " + num(beta) + ", so y = x̂. As training goes on, " +
-            "the model can learn different γ and β for each dimension and partly undo the normalisation if that helps.",
+            "the model can learn different γ and β for each dimension and partly undo the normalization if that helps.",
           blocks: [
             nRow,
             { type: "lines", lines: [{ t: "y = γ · x̂ + β = " + num(gamma) + " · x̂ + " + num(beta), hl: true }] },
@@ -474,30 +474,33 @@
       `<text x="${cx}" y="${cy + 4}" text-anchor="middle">${label}</text></g>`
     );
   }
+  // The diagram appears more than once on the page, so marker ids get a per-drawing suffix.
+  let svgSeq = 0;
   function drawBlock(mode) {
     const m = blockModel(mode);
+    const uid = mode + "-" + ++svgSeq;
     let s =
       `<svg viewBox="0 0 350 545" class="l2p3-svg l2p3-block${REDUCE ? "" : " is-entering"}" role="img" aria-label="${
         mode === "pre" ? "Pre-norm block: the residual path runs straight from x to the top" : "Post-norm block: the residual path passes through a LayerNorm after each Add"
       }">`;
-    s += `<defs><marker id="l2p3-hwah-${mode}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" class="l2p3-hwhead"/></marker>` +
-      `<marker id="l2p3-brah-${mode}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" class="l2p3-brhead"/></marker></defs>`;
+    s += `<defs><marker id="l2p3-hwah-${uid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" class="l2p3-hwhead"/></marker>` +
+      `<marker id="l2p3-brah-${uid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" class="l2p3-brhead"/></marker></defs>`;
     // Branches first so the highway sits on top.
     m.branches.forEach((b) => {
       const bottom = b.boxes[0].y + b.boxes[0].h / 2;
-      s += `<path class="l2p3-br" d="M${MX} ${b.split} H${BX} V${bottom}" marker-end="url(#l2p3-brah-${mode})"/>`;
+      s += `<path class="l2p3-br" d="M${MX} ${b.split} H${BX} V${bottom}" marker-end="url(#l2p3-brah-${uid})"/>`;
       for (let i = 1; i < b.boxes.length; i++) {
         const prevTop = b.boxes[i - 1].y - b.boxes[i - 1].h / 2;
         const nextBottom = b.boxes[i].y + b.boxes[i].h / 2;
-        s += `<path class="l2p3-br" d="M${BX} ${prevTop} V${nextBottom}" marker-end="url(#l2p3-brah-${mode})"/>`;
+        s += `<path class="l2p3-br" d="M${BX} ${prevTop} V${nextBottom}" marker-end="url(#l2p3-brah-${uid})"/>`;
       }
       const top = b.boxes[b.boxes.length - 1];
-      s += `<path class="l2p3-br" d="M${BX} ${top.y - top.h / 2} V${b.join} H${MX + 12}" marker-end="url(#l2p3-brah-${mode})"/>`;
+      s += `<path class="l2p3-br" d="M${BX} ${top.y - top.h / 2} V${b.join} H${MX + 12}" marker-end="url(#l2p3-brah-${uid})"/>`;
       b.boxes.forEach((bx) => (s += boxSvg(BX, bx.y, 164, bx.h, bx.label, "is-" + bx.kind)));
     });
     m.hw.forEach((seg, i) => {
       const end = i === m.hw.length - 1;
-      s += `<line class="l2p3-hw" x1="${MX}" y1="${seg[0]}" x2="${MX}" y2="${seg[1]}"${end ? ` marker-end="url(#l2p3-hwah-${mode})"` : ""}/>`;
+      s += `<line class="l2p3-hw" x1="${MX}" y1="${seg[0]}" x2="${MX}" y2="${seg[1]}"${end ? ` marker-end="url(#l2p3-hwah-${uid})"` : ""}/>`;
     });
     m.adds.forEach((y) => {
       s += `<g class="l2p3-add"><circle cx="${MX}" cy="${y}" r="11"/><path d="M${MX - 5} ${y}H${MX + 5}M${MX} ${y - 5}V${y + 5}"/></g>`;
@@ -523,7 +526,7 @@
       "and again in the next block, and the next.",
     pre:
       "<b>Pre-norm, used since GPT-2:</b> <span class=\"math\">output = x + F(LayerNorm(x))</span>. Now the teal highway runs straight " +
-      "from x to the top without touching a single norm inside the block. Only the branches are normalised, plus one final norm at the very top.",
+      "from x to the top without touching a single norm inside the block. Only the branches are normalized, plus one final norm at the very top.",
   };
   function initBlockFigures() {
     document.querySelectorAll("[data-l2p3-block]").forEach((fig) => {
