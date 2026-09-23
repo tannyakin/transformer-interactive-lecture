@@ -6,7 +6,6 @@
    Every text colour below is checked at 4.5:1 or better.
    ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..600&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 :root,
 :root:not([data-theme="light"]) {

@@ -608,6 +608,8 @@
   }
 
   L.Walkthrough = Object.assign({ mount, players }, pure);
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountAll);
-  else mountAll();
+  // Deferred scripts run while readyState is already "interactive", before later
+  // lecture files have registered their definitions, so wait for DOMContentLoaded.
+  if (document.readyState === "complete") mountAll();
+  else document.addEventListener("DOMContentLoaded", mountAll);
 })(typeof window !== "undefined" ? window : globalThis);

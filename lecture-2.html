@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From attention to modern LLMs: Lecture 2</title>
+<meta name="description" content="Lecture 2 of the AI UniPod LLM series: positional encoding, Add and Norm, the feedforward network, the cost of attention, MHA to GQA, BERT and RoBERTa, with every calculation played out step by step.">
+<script>
+  // Apply the saved theme before the first paint so the page never flashes.
+  try {
+    var t = localStorage.getItem("transformer-theme");
+    if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141821'/%3E%3Ccircle cx='9' cy='11' r='2.6' fill='%233ee6c4'/%3E%3Ccircle cx='23' cy='11' r='2.6' fill='%23ffa057'/%3E%3Ccircle cx='16' cy='23' r='2.6' fill='%23ff5d7a'/%3E%3Cpath d='M9 11L23 11M9 11L16 23M23 11L16 23' stroke='%23ff5d7a' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,300..700;1,7..72,400..600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/shell.css">
+<link rel="stylesheet" href="css/walkthrough.css">
+<!-- PART-CSS -->
+</head>
+<body data-lecture="l2">
+<a class="skip-link" href="#main">Skip to the lecture</a>
+<span id="top"></span>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top" aria-label="Back to the top of Lecture 2">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="9" cy="11" r="2.6" fill="var(--encoder)"/><circle cx="23" cy="11" r="2.6" fill="var(--decoder)"/><circle cx="16" cy="23" r="2.6" fill="var(--attn)"/><path d="M9 11L23 11M9 11L16 23M23 11L16 23" stroke="var(--attn)" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </a>
+    <nav class="lecture-switch" aria-label="Lectures">
+      <a href="index.html"><span class="full">Lecture&nbsp;</span>1</a>
+      <a href="lecture-2.html" aria-current="page"><span class="full">Lecture&nbsp;</span>2</a>
+    </nav>
+    <button class="part-button" id="part-button" type="button" aria-haspopup="dialog" aria-controls="contents">
+      <span class="pb-count"><span class="pb-num"></span>/<span class="pb-total"></span></span>
+      <span class="pb-title">Contents</span>
+      <svg class="pb-chevron" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false">
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+    </button>
+  </div>
+  <div class="progress-rail" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+</header>
+
+<dialog class="drawer" id="contents" aria-labelledby="contents-title">
+  <div class="drawer-inner">
+    <div class="drawer-head">
+      <div>
+        <p class="drawer-title" id="contents-title">Lecture 2 contents</p>
+        <p class="toc-count"></p>
+      </div>
+      <button class="icon-btn" type="button" data-close aria-label="Close contents">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <a class="toc-resume" href="#top" hidden><small>Pick up where you left off</small><span class="toc-resume-where"></span></a>
+    <ol class="toc"></ol>
+    <p class="drawer-foot">Ticks mark the parts you have finished. Your progress is saved in this browser only.</p>
+  </div>
+</dialog>
+
+<main id="main">
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <p class="hero-kicker">AI UniPod LLM series · Lecture 2</p>
+      <h1 id="hero-title">From attention to modern LLMs</h1>
+      <p class="hero-dek">
+        Lecture 1 ended on one uncomfortable fact: <strong>attention has no idea what order the words are in.</strong>
+        This lecture fixes that, fills in the rest of the transformer block, works out what it all costs to run,
+        and follows the story from the 2017 paper to the models people use today. Every calculation plays out
+        step by step, so keep a calculator nearby and check each number as it appears.
+      </p>
+      <ol class="route" aria-label="The road through this lecture">
+        <li><a href="#p1"><span class="route-num">1</span>Why order disappears</a></li>
+        <li><a href="#p2"><span class="route-num">2</span>Positional encoding</a></li>
+        <li><a href="#p3"><span class="route-num">3</span>Add &amp; Norm</a></li>
+        <li><a href="#p4"><span class="route-num">4</span>The feedforward network</a></li>
+        <li><a href="#p5"><span class="route-num">5</span>What attention costs</a></li>
+        <li><a href="#p6"><span class="route-num">6</span>Sparse attention</a></li>
+        <li><a href="#p7"><span class="route-num">7</span>MHA, MQA and GQA</a></li>
+        <li><a href="#p8"><span class="route-num">8</span>Three model families</a></li>
+        <li><a href="#p9"><span class="route-num">9</span>BERT</a></li>
+        <li><a href="#p10"><span class="route-num">10</span>After BERT</a></li>
+        <li><a href="#p11"><span class="route-num">11</span>What a modern LLM is made of</a></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="part" id="p1" data-title="Why order disappears">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">1</span>
+        <div>
+          <h2><span class="sr-only">Part 1: </span>Why order disappears</h2>
+          <p class="part-question">Attention compares every word with every other word. So why can't it tell "dog bites man" from "man bites dog"?</p>
+        </div>
+      </header>
+      <!-- BODY:p1 -->
+      <footer class="part-bridge">
+        <p>An RNN never had this problem, because reading one word at a time is itself a sense of order. The transformer gave that up for speed, so it has to put order back some other way. That other way is positional encoding.</p>
+        <a class="bridge-next" href="#p2"><span><small>Next, Part 2</small>Positional encoding</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p2" data-title="Positional encoding" data-sub="p2-1:Learned positions|p2-2:Sinusoidal encoding|p2-3:The shift to relative position|p2-4:T5 relative bias|p2-5:ALiBi|p2-6:RoPE|p2-7:Summary">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">2</span>
+        <div>
+          <h2><span class="sr-only">Part 2: </span>Positional encoding</h2>
+          <p class="part-question">If attention can't see order, how do we put order back in? Six answers, from the simplest to the one nearly every modern LLM uses.</p>
+        </div>
+      </header>
+      <!-- BODY:p2a -->
+      <!-- BODY:p2b -->
+      <footer class="part-bridge">
+        <p>We now know how the model sees order. Next question: once attention has done its job, what happens to its output? That takes us to the rest of the transformer block.</p>
+        <a class="bridge-next" href="#p3"><span><small>Next, Part 3</small>Add &amp; Norm</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p3" data-title="Add &amp; Norm">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">3</span>
+        <div>
+          <h2><span class="sr-only">Part 3: </span>Add &amp; Norm</h2>
+          <p class="part-question">Stacking dozens of layers used to break training. What keeps a deep transformer stable?</p>
+        </div>
+      </header>
+      <!-- BODY:p3 -->
+      <footer class="part-bridge">
+        <p>We now have attention, plus the residual connection and the norm around it. The other sublayer in every block is the feedforward network.</p>
+        <a class="bridge-next" href="#p4"><span><small>Next, Part 4</small>The feedforward network</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p4" data-title="The feedforward network">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">4</span>
+        <div>
+          <h2><span class="sr-only">Part 4: </span>The feedforward network</h2>
+          <p class="part-question">Attention mixes information between tokens. What does each token do with what it learned?</p>
+        </div>
+      </header>
+      <!-- BODY:p4 -->
+      <footer class="part-bridge">
+        <p>That is the full transformer block: attention, Add &amp; Norm, FFN, Add &amp; Norm. Stack it N times and you have a transformer. The next question is the practical one: what does all of this cost to run?</p>
+        <a class="bridge-next" href="#p5"><span><small>Next, Part 5</small>What attention costs</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p5" data-title="What attention costs">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">5</span>
+        <div>
+          <h2><span class="sr-only">Part 5: </span>What attention costs</h2>
+          <p class="part-question">Why does doubling the length of a text make attention four times as expensive?</p>
+        </div>
+      </header>
+      <!-- BODY:p5 -->
+      <footer class="part-bridge">
+        <p>FlashAttention makes attention much faster in practice, but it still does n² work. To actually cut the n², you have to stop computing every pair. That brings us to sparse attention.</p>
+        <a class="bridge-next" href="#p6"><span><small>Next, Part 6</small>Sparse attention</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p6" data-title="Sparse attention">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">6</span>
+        <div>
+          <h2><span class="sr-only">Part 6: </span>Sparse attention</h2>
+          <p class="part-question">Does every token really need to look at every other token?</p>
+        </div>
+      </header>
+      <!-- BODY:p6 -->
+      <footer class="part-bridge">
+        <p>Sparse attention cuts the cost of computing scores. But another cost only shows up when a model generates text, and it changed how attention heads themselves are designed.</p>
+        <a class="bridge-next" href="#p7"><span><small>Next, Part 7</small>MHA, MQA and GQA</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p7" data-title="MHA, MQA and GQA">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">7</span>
+        <div>
+          <h2><span class="sr-only">Part 7: </span>MHA, MQA and GQA</h2>
+          <p class="part-question">When a model writes one token at a time, what eats all the memory, and how do we shrink it?</p>
+        </div>
+      </header>
+      <!-- BODY:p7 -->
+      <footer class="part-bridge">
+        <p>We have now covered the pieces. Time to see how they are assembled into different kinds of models.</p>
+        <a class="bridge-next" href="#p8"><span><small>Next, Part 8</small>Three model families</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p8" data-title="Three model families">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">8</span>
+        <div>
+          <h2><span class="sr-only">Part 8: </span>Three model families</h2>
+          <p class="part-question">Encoder, decoder or both: which one do you need, and why did decoder-only win?</p>
+        </div>
+      </header>
+      <!-- BODY:p8 -->
+      <footer class="part-bridge">
+        <p>Encoder-only models did not disappear. They are still the go-to for embeddings, search, classification and RAG, because they are small, fast and cheap. Which brings us to the most important encoder model of all.</p>
+        <a class="bridge-next" href="#p9"><span><small>Next, Part 9</small>BERT</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p9" data-title="BERT">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">9</span>
+        <div>
+          <h2><span class="sr-only">Part 9: </span>BERT</h2>
+          <p class="part-question">How did one encoder, trained by filling in blanks, change the whole field?</p>
+        </div>
+      </header>
+      <!-- BODY:p9 -->
+      <footer class="part-bridge">
+        <p>BERT had clear weak spots: it was heavy for its time, it learned from only 15% of its tokens, and it was undertrained. Each model that came next went after one of them.</p>
+        <a class="bridge-next" href="#p10"><span><small>Next, Part 10</small>After BERT</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p10" data-title="After BERT">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">10</span>
+        <div>
+          <h2><span class="sr-only">Part 10: </span>After BERT</h2>
+          <p class="part-question">What happened when people fixed BERT's weaknesses one at a time?</p>
+        </div>
+      </header>
+      <!-- BODY:p10 -->
+      <footer class="part-bridge">
+        <p>How you train matters as much as what you build. That lesson points straight at the scaling era that produced today's LLMs.</p>
+        <a class="bridge-next" href="#p11"><span><small>Next, Part 11</small>What a modern LLM is made of</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <section class="part" id="p11" data-title="What a modern LLM is made of">
+    <div class="wrap">
+      <header class="part-opener">
+        <span class="part-num" aria-hidden="true">11</span>
+        <div>
+          <h2><span class="sr-only">Part 11: </span>What a modern LLM is made of</h2>
+          <p class="part-question">Put every idea from both lectures together. What is a model like Llama 3 actually built from?</p>
+        </div>
+      </header>
+      <!-- BODY:p11 -->
+      <footer class="part-bridge">
+        <p>That is the whole road from the 2017 paper to today. Keep the glossary below handy whenever an abbreviation trips you up.</p>
+        <a class="bridge-next" href="#glossary"><span><small>Reference</small>Glossary and further reading</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </div>
+  </section>
+
+  <!-- BODY:end -->
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Part of the <strong>AI UniPod</strong> LLM lecture series. This lecture follows Stanford CME295, Lecture 2, "Transformer-Based Models &amp; Tricks" by Afshine and Shervine Amidi, with worked examples added for self-study.</p>
+    <p>Numbers in every walkthrough are computed live and checked against the lecture notes by automated tests.</p>
+  </div>
+</footer>
+
+<div class="toast" id="resume-toast" role="status" hidden>
+  <p class="toast-text">Welcome back. You stopped at <span class="toast-where"></span>.</p>
+  <a class="toast-go" href="#top">Continue there</a>
+  <button class="icon-btn toast-close" type="button" aria-label="Dismiss">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+</div>
+
+<script src="js/core/math.js" defer></script>
+<script src="js/core/store.js" defer></script>
+<script src="js/core/walkthrough.js" defer></script>
+<script src="js/lecture-2/part-2.js" defer></script>
+<!-- PART-JS -->
+<script src="js/core/shell.js" defer></script>
+</body>
+</html>
