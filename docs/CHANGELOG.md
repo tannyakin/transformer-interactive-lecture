@@ -2,6 +2,11 @@
 
 A running record of what changed in the lecture site and why. Newest first.
 
+## 2026-09-24: Explain why each piece of the encoder-decoder stack exists
+
+- Lecture 1, Part 3's architecture diagram already drew and labelled every piece (input/output embedding, positional encoding, encoder self-attention, Add & Norm, feed forward, masked self-attention, cross-attention, linear, softmax), but never said why each one is there. Added a lead-in paragraph on why the architecture splits into two stacks at all, plus an 8-item ordered explanation list (`.l1-why`, new CSS mirroring Lecture 2's `.l2p11-four` pattern) walking through the reasoning for every element in diagram order.
+- Verified in-browser at desktop width and confirmed all 135 tests still pass (including the em-dash scanner over the new prose).
+
 ## 2026-09-23: Visual design pass, code review, and build-scratch cleanup
 
 - Visual design pass: checked the shipped pages against the design system's own rules (checked-contrast token comment, no eyebrow/gradient-text/side-stripe-border patterns, purposeful rather than decorative use of backdrop-blur) and confirmed every text/background pairing in `css/tokens.css` clears WCAG AA (4.87:1 to 16.74:1). Spot-checked the hero, a worked-example walkthrough card, a comparison table, and Lecture 1's live attention demo in both themes and at 375px and 1440px widths. No changes needed; the build already met the bar.

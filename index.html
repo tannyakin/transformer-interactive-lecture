@@ -368,6 +368,82 @@
         </figcaption>
       </figure>
 
+      <div class="prose">
+        <p>
+          The split into two stacks is not arbitrary. Turning one sentence into another is really two different jobs.
+          First, understand the whole source sentence, and nothing there needs hiding, so the encoder can look in both
+          directions at once. Second, write the output one word at a time without ever peeking ahead, a much stricter
+          rule that only the decoder has to follow. Splitting the network in two lets each half specialise in the job
+          that actually suits it, and <b>cross-attention is the one bridge that lets the decoder keep consulting what
+          the encoder understood</b> while it writes.
+        </p>
+        <h3>Why every piece in that diagram is there</h3>
+      </div>
+
+      <ol class="l1-why">
+        <li>
+          <h4>Input and output embedding</h4>
+          <p>A token starts life as an id, just a number. The embedding layer looks that id up in a table and returns
+          a vector that captures something about the token's meaning, the only form every later step, attention and
+          the feedforward layers, actually knows how to work with. The encoder embeds the whole source sentence at
+          once. The decoder embeds only the tokens it has already written, because at each step that is genuinely all
+          it has to work with.</p>
+        </li>
+        <li>
+          <h4>Positional encoding</h4>
+          <p>Attention on its own cannot tell where a word sits: shuffle the input and the attention scores come out
+          exactly the same, the problem this lecture opened with. The fixed sine and cosine pattern is added onto the
+          embedding so every position carries its own distinct signature, without changing the size of the vector.
+          Part 5 works through why sine and cosine specifically.</p>
+        </li>
+        <li>
+          <h4>Encoder self-attention</h4>
+          <p>Before the decoder can ask anything about the source sentence, each source word first needs to know
+          about its own neighbours. "Bank" means something different next to "river" than next to "money", and
+          self-attention lets every position gather that context from every other position in one step, instead of
+          passing it along word by word the way an older recurrent network has to. Eight heads run this in parallel
+          so the model can track several kinds of relationship, say syntax and coreference, at once.</p>
+        </li>
+        <li>
+          <h4>Add &amp; Norm</h4>
+          <p>This pair runs after every sublayer, five times per layer across the two stacks. Add is the residual
+          connection: it lets a sublayer's input skip straight through to its output, so a gradient can always flow
+          backward even if that sublayer has learned little so far, which is what makes stacking six or more of these
+          on top of each other trainable at all. Norm, layer normalisation, then rescales the result back into a
+          stable range, since a long chain of unchecked additions would otherwise drift.</p>
+        </li>
+        <li>
+          <h4>Feed forward</h4>
+          <p>Attention is good at moving information between positions, not at doing much further work with it once
+          it arrives. The feedforward network runs on each position independently, expanding to a wider hidden layer,
+          2048 against a 512-wide input in the base model, and back down, giving the model room to transform and
+          store whatever attention just gathered. Most of a transformer's parameters live in these layers, not in
+          attention itself.</p>
+        </li>
+        <li>
+          <h4>Masked self-attention</h4>
+          <p>At the moment the decoder actually generates text, it can only see what it has already written, never
+          what comes next. If training let it look ahead anyway, it would learn to lean on an answer it will never
+          have at inference time. The causal mask enforces that same limit during training, blocking every position
+          from attending to anything after itself.</p>
+        </li>
+        <li>
+          <h4>Cross-attention</h4>
+          <p>This is the only bridge between the two stacks, and the one that does the actual translating. Its
+          queries come from the decoder, what am I about to say, but its keys and values come from the encoder's
+          finished output, what did the source sentence actually mean, so every decoder position can consult the
+          whole source sentence directly. Older encoder-decoder models had to squeeze the entire source into one
+          fixed summary vector. Cross-attention is exactly what removes that bottleneck.</p>
+        </li>
+        <li>
+          <h4>Linear and softmax</h4>
+          <p>After all of that, the decoder's output at a position is still just a vector in the model's own
+          512-number space, not a word yet. The linear layer projects it up to one raw score per vocabulary entry,
+          and softmax turns those scores into probabilities that sum to 1, so the model has an actual distribution to
+          predict from, or sample from, rather than a list of arbitrary numbers.</p>
+        </li>
+      </ol>
+
       <footer class="part-bridge">
         <p>Three of those boxes are attention: self-attention, masked self-attention and cross-attention. They all run the same small computation. Time to open one up and do it by hand.</p>
         <a class="bridge-next" href="#p4"><span><small>Next, Part 4</small>Inside attention</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>

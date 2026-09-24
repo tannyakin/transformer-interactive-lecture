@@ -164,6 +164,12 @@
 .l1-pulse { fill: var(--attn); filter: drop-shadow(0 0 6px var(--attn)); opacity: 0; }
 .l1-pulse.show { opacity: 1; }
 
+.l1-why { margin: var(--space-5) 0 0; padding-left: 1.6em; max-width: var(--measure); }
+.l1-why > li { margin-bottom: var(--space-5); padding-left: 0.3em; }
+.l1-why > li::marker { font-family: var(--font-math); font-size: var(--step-1); color: var(--accent); font-weight: 600; }
+.l1-why h4 { margin: 0 0 var(--space-2); font-size: var(--step-1); font-weight: 600; }
+.l1-why p { margin: 0; line-height: var(--lh-body); }
+
 .l1-legend { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0 0 var(--space-4); padding: 0; font-size: 0.875rem; color: var(--ink-soft); }
 .l1-legend li { display: inline-flex; align-items: center; gap: 8px; }
 .l1-swatch { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid; flex: none; }
