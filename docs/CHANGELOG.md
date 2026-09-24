@@ -2,6 +2,12 @@
 
 A running record of what changed in the lecture site and why. Newest first.
 
+## 2026-09-24: Best-on-a-bigger-screen pop-up
+
+- New one-time dialog on phone-sized screens (under 700px wide) reading "Best on a laptop or tablet", explaining that the wide diagrams and step-by-step figures need room and that phones still work but some figures will be tight. Built in `js/core/shell.js` so both lectures get it, styled in `css/shell.css` with existing tokens, and it uses a native `<dialog>` (focus trapped, Escape closes it).
+- Dismissal is remembered in the progress store (`deviceTipSeen`), so returning visitors are not nagged. Tablets, laptops and desktops never see it.
+- The show/hide rule is a pure function, `needsDeviceTip`, with two new tests (137 total, all passing). Checked live: shows on first phone visit, saves the dismissal, stays gone after reload, never appears at 1280px.
+
 ## 2026-09-24: Label the decoder's cross-attention box by name
 
 - The decoder's second sublayer box in Lecture 1, Part 3's architecture diagram was titled generically "Multi-Head Attention," same as the encoder's self-attention box, with only a small "Q: decoder · K, V: encoder" subtext hinting it was actually cross-attention. The masked self-attention box right above it already spells out its type ("Masked Multi-Head Attention"), so this one was the odd one out. Retitled it "Multi-Head Cross-Attention" to match, so the diagram is unambiguous on its own without reading the subtext.

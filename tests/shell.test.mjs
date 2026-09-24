@@ -19,6 +19,18 @@ test("a part exactly on the reading line counts as current", () => {
   assert.equal(S.currentIndex([-100, 240, 900], 240), 1);
 });
 
+test("the device tip shows on phone-sized screens until it has been dismissed", () => {
+  assert.equal(S.needsDeviceTip(375, false), true);
+  assert.equal(S.needsDeviceTip(699, false), true);
+  assert.equal(S.needsDeviceTip(375, true), false);
+});
+
+test("the device tip stays away on tablet, laptop and desktop widths", () => {
+  assert.equal(S.needsDeviceTip(700, false), false);
+  assert.equal(S.needsDeviceTip(820, false), false);
+  assert.equal(S.needsDeviceTip(1440, false), false);
+});
+
 test("sub-section lists parse from the data-sub attribute", () => {
   assert.deepEqual(S.parseSubs("p2-1:Learned positions|p2-2:Sinusoidal: clock hands"), [
     { id: "p2-1", title: "Learned positions" },

@@ -25,7 +25,13 @@
     });
   }
 
-  const pure = { currentIndex, parseSubs };
+  // The lectures lean on wide figures and side-by-side panels, so phones get a one-time heads up.
+  const TIP_MAX_WIDTH = 700;
+  function needsDeviceTip(width, dismissed) {
+    return !dismissed && width < TIP_MAX_WIDTH;
+  }
+
+  const pure = { currentIndex, parseSubs, needsDeviceTip };
   if (typeof module !== "undefined" && module.exports) module.exports = pure;
   if (typeof document === "undefined") return;
 
@@ -231,8 +237,35 @@
     document.querySelectorAll(".part-bridge").forEach((b) => bridgeObserver.observe(b));
   }
 
+  /* ---------- best on a bigger screen ---------- */
+  function maybeShowDeviceTip() {
+    if (typeof HTMLDialogElement === "undefined") return;
+    if (!needsDeviceTip(root.innerWidth, store.getPref("deviceTipSeen", false))) return;
+    const tip = document.createElement("dialog");
+    tip.className = "device-tip";
+    tip.setAttribute("aria-labelledby", "device-tip-title");
+    tip.innerHTML =
+      '<svg class="device-tip-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M2 20h20"/></svg>' +
+      '<h2 id="device-tip-title">Best on a laptop or tablet</h2>' +
+      "<p>These lectures use wide diagrams and step-by-step figures that need room to breathe. " +
+      "For the best experience, open this page on a laptop or tablet. " +
+      "You can keep going on your phone, but some figures will be tight.</p>" +
+      '<button type="button" class="device-tip-ok">Got it, continue</button>';
+    const dismiss = () => {
+      store.setPref("deviceTipSeen", true);
+      tip.close();
+    };
+    tip.querySelector(".device-tip-ok").addEventListener("click", dismiss);
+    tip.addEventListener("cancel", () => store.setPref("deviceTipSeen", true));
+    tip.addEventListener("close", () => tip.remove());
+    document.body.append(tip);
+    tip.showModal();
+    tip.querySelector(".device-tip-ok").focus();
+  }
+
   // Remember where the learner is before anything scrolls, so the toast reflects the last visit.
   maybeShowToast();
+  maybeShowDeviceTip();
   buildToc();
   document.addEventListener("scroll", onScroll, { passive: true });
   root.addEventListener("resize", onScroll);
