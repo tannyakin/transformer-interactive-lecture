@@ -2,6 +2,10 @@
 
 A running record of what changed in the lecture site and why. Newest first.
 
+## 2026-09-24: Label the decoder's cross-attention box by name
+
+- The decoder's second sublayer box in Lecture 1, Part 3's architecture diagram was titled generically "Multi-Head Attention," same as the encoder's self-attention box, with only a small "Q: decoder · K, V: encoder" subtext hinting it was actually cross-attention. The masked self-attention box right above it already spells out its type ("Masked Multi-Head Attention"), so this one was the odd one out. Retitled it "Multi-Head Cross-Attention" to match, so the diagram is unambiguous on its own without reading the subtext.
+
 ## 2026-09-24: Explain why each piece of the encoder-decoder stack exists
 
 - Lecture 1, Part 3's architecture diagram already drew and labelled every piece (input/output embedding, positional encoding, encoder self-attention, Add & Norm, feed forward, masked self-attention, cross-attention, linear, softmax), but never said why each one is there. Added a lead-in paragraph on why the architecture splits into two stacks at all, plus an 8-item ordered explanation list (`.l1-why`, new CSS mirroring Lecture 2's `.l2p11-four` pattern) walking through the reasoning for every element in diagram order.
