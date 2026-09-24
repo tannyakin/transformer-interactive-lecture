@@ -5,6 +5,7 @@ A running record of what changed in the lecture site and why. Newest first.
 ## 2026-09-24: Label the decoder's cross-attention box by name
 
 - The decoder's second sublayer box in Lecture 1, Part 3's architecture diagram was titled generically "Multi-Head Attention," same as the encoder's self-attention box, with only a small "Q: decoder · K, V: encoder" subtext hinting it was actually cross-attention. The masked self-attention box right above it already spells out its type ("Masked Multi-Head Attention"), so this one was the odd one out. Retitled it "Multi-Head Cross-Attention" to match, so the diagram is unambiguous on its own without reading the subtext.
+- Followed up by also retitling the encoder's self-attention box, from generic "Multi-Head Attention" to "Multi-Head Self-Attention," so all three attention boxes in the diagram now name their own type at a glance. Checked Lecture 2 for the same failure mode (a diagram with several similar-looking boxes where only some spell out what they are) and found none; Lecture 2 doesn't redraw this architecture, it links back to it.
 
 ## 2026-09-24: Explain why each piece of the encoder-decoder stack exists
 
